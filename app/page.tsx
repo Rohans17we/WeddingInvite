@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import type { BurstId } from "@/lib/bursts";
 
@@ -21,6 +21,7 @@ export default function Home() {
   const [activeBurst, setActiveBurst] = useState<BurstId>("marigold");
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
   const [scrollUnlocked, setScrollUnlocked] = useState(false);
+  const mainRef = useRef<HTMLDivElement>(null);
 
   const handleOpen = () => {
     setEnvelopeOpened(true);
@@ -30,22 +31,36 @@ export default function Home() {
     }, 2800);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scroller = e.currentTarget;
-    // When scrolled back close to the top, close the envelope and force scroll back to 0
-    if (envelopeOpened && scroller.scrollTop < 30) {
-      setEnvelopeOpened(false);
-      setScrollUnlocked(false);
-      scroller.scrollTop = 0;
-    }
-  };
+  useEffect(() => {
+    const scroller = mainRef.current;
+    if (!scroller) return;
+
+    const handleNativeScroll = () => {
+      const scrollTop = scroller.scrollTop || window.scrollY;
+      // When scrolled back close to the top, close the envelope and lock scroller
+      if (envelopeOpened && scrollTop < 30) {
+        setEnvelopeOpened(false);
+        setScrollUnlocked(false);
+        scroller.scrollTop = 0;
+        window.scrollTo({ top: 0 });
+      }
+    };
+
+    scroller.addEventListener("scroll", handleNativeScroll, { passive: true });
+    window.addEventListener("scroll", handleNativeScroll, { passive: true });
+
+    return () => {
+      scroller.removeEventListener("scroll", handleNativeScroll);
+      window.removeEventListener("scroll", handleNativeScroll);
+    };
+  }, [envelopeOpened]);
 
   return (
     <>
       {/* ─── Full-screen scroll-snap container ─── */}
       <main 
+        ref={mainRef}
         className={`snapContainer ${scrollUnlocked ? "unlocked" : ""}`}
-        onScroll={handleScroll}
       >
 
         {/* 🫙 Envelope — always first snap point */}
