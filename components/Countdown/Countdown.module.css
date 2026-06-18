@@ -1,0 +1,157 @@
+.section {
+  background: linear-gradient(160deg, var(--color-bg-deep) 0%, #2A0A0A 100%);
+  color: var(--color-bg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Starfield background */
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 15% 20%, rgba(212,175,55,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 15%, rgba(212,175,55,0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 45% 60%, rgba(212,175,55,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 75%, rgba(212,175,55,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 80%, rgba(212,175,55,0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 55% 35%, rgba(212,175,55,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 45%, rgba(212,175,55,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 8%  55%, rgba(212,175,55,0.5) 0%, transparent 100%);
+  pointer-events: none;
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
+.quote {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: rgba(212,175,55,0.8);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.weddingLabel {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 8px;
+  text-shadow: 0 0 40px rgba(212,175,55,0.4);
+}
+
+.weddingDate {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.2em;
+  margin-bottom: 56px;
+  text-transform: uppercase;
+}
+
+/* ---- Flip cards ---- */
+.countdownGrid {
+  display: flex;
+  gap: clamp(12px, 3vw, 28px);
+  justify-content: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.flipCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.flipInner {
+  position: relative;
+  width: clamp(72px, 14vw, 100px);
+  height: clamp(80px, 16vw, 112px);
+}
+
+.flipTop,
+.flipBottom {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #1A0505 0%, #2C1010 100%);
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 700;
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+[data-theme="navy"] .flipTop,
+[data-theme="navy"] .flipBottom {
+  background: linear-gradient(180deg, #060D15 0%, #0D1B2A 100%);
+}
+
+[data-theme="saffron"] .flipTop,
+[data-theme="saffron"] .flipBottom {
+  background: linear-gradient(180deg, #1A0A00 0%, #2C1500 100%);
+}
+
+[data-theme="plum"] .flipTop,
+[data-theme="plum"] .flipBottom {
+  background: linear-gradient(180deg, #150510 0%, #2A0825 100%);
+}
+
+.flipTop {
+  height: 50%;
+  top: 0;
+  align-items: flex-end;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(212,175,55,0.15);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.flipBottom {
+  height: 50%;
+  bottom: 0;
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+.flipLabel {
+  font-family: var(--font-body);
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(212,175,55,0.6);
+}
+
+.separator {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: rgba(212,175,55,0.4);
+  padding-bottom: 28px;
+  line-height: 1;
+}
+
+.expiredMessage {
+  font-family: var(--font-script);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--color-gold);
+}
+
+@media (max-width: 480px) {
+  .separator { display: none; }
+}

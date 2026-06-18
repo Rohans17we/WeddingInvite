@@ -1,0 +1,339 @@
+/* ============================================================
+   WEDDING INVITE — Global CSS Design System
+   All 4 themes defined as CSS custom properties
+   Active theme is set via data-theme on <html>
+   ============================================================ */
+
+/* ---------- Google Fonts ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Hind:wght@300;400;500&family=Great+Vibes&display=swap');
+
+/* ---------- Default Theme: Maroon & Gold ---------- */
+:root {
+  --color-primary:      #7B1C1C;
+  --color-primary-dark: #4A0E0E;
+  --color-accent:       #D4AF37;
+  --color-accent-light: #F0D060;
+  --color-bg:           #FFF8E7;
+  --color-bg-deep:      #1A0505;
+  --color-surface:      #FFF0D0;
+  --color-text:         #2C0B0B;
+  --color-text-light:   #7B4444;
+  --color-gold:         #D4AF37;
+  --color-gold-light:   #F5D98A;
+  --envelope-body:      #8B1A1A;
+  --envelope-flap:      #6B0F0F;
+  --seal-bg:            #D4AF37;
+  --seal-text:          #4A0E0E;
+
+  /* Typography */
+  --font-display:    'Playfair Display', Georgia, serif;
+  --font-body:       'Cormorant Garamond', Georgia, serif;
+  --font-script:     'Great Vibes', cursive;
+  --font-devanagari: 'Hind', sans-serif;
+
+  /* Spacing */
+  --section-pad-v: clamp(80px, 10vh, 140px);
+  --section-pad-h: clamp(20px, 5vw, 80px);
+
+  /* Shadows */
+  --shadow-card:   0 8px 40px rgba(0,0,0,0.18);
+  --shadow-float:  0 20px 60px rgba(0,0,0,0.25);
+  --shadow-gold:   0 4px 20px rgba(212,175,55,0.4);
+
+  /* Transitions */
+  --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Border radius */
+  --radius-card: 16px;
+  --radius-pill: 999px;
+}
+
+/* ---------- Theme: Navy & Rose Gold ---------- */
+[data-theme="navy"] {
+  --color-primary:      #0D1B2A;
+  --color-primary-dark: #060D15;
+  --color-accent:       #B76E79;
+  --color-accent-light: #D4959E;
+  --color-bg:           #F5F0EB;
+  --color-bg-deep:      #060D15;
+  --color-surface:      #EDE5DC;
+  --color-text:         #0D1B2A;
+  --color-text-light:   #4A5568;
+  --color-gold:         #C9A96E;
+  --color-gold-light:   #E8C99A;
+  --envelope-body:      #0D1B2A;
+  --envelope-flap:      #152535;
+  --seal-bg:            #B76E79;
+  --seal-text:          #FFF5F5;
+}
+
+/* ---------- Theme: Saffron & Ivory ---------- */
+[data-theme="saffron"] {
+  --color-primary:      #C45F00;
+  --color-primary-dark: #7A3A00;
+  --color-accent:       #FFC200;
+  --color-accent-light: #FFD966;
+  --color-bg:           #FFFBF0;
+  --color-bg-deep:      #1A0A00;
+  --color-surface:      #FFF3D0;
+  --color-text:         #2C1500;
+  --color-text-light:   #7A4A00;
+  --color-gold:         #FFC200;
+  --color-gold-light:   #FFD966;
+  --envelope-body:      #C45F00;
+  --envelope-flap:      #A04A00;
+  --seal-bg:            #FFC200;
+  --seal-text:          #2C1500;
+}
+
+/* ---------- Theme: Plum & Champagne ---------- */
+[data-theme="plum"] {
+  --color-primary:      #4A1040;
+  --color-primary-dark: #2A0825;
+  --color-accent:       #C9956A;
+  --color-accent-light: #E8C4A0;
+  --color-bg:           #FDF5EE;
+  --color-bg-deep:      #150510;
+  --color-surface:      #F2E8DF;
+  --color-text:         #2A0825;
+  --color-text-light:   #7A4A6A;
+  --color-gold:         #C9956A;
+  --color-gold-light:   #E8C4A0;
+  --envelope-body:      #4A1040;
+  --envelope-flap:      #350B2E;
+  --seal-bg:            #C9956A;
+  --seal-text:          #2A0825;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+.font-display   { font-family: var(--font-display); }
+.font-body      { font-family: var(--font-body); }
+.font-script    { font-family: var(--font-script); }
+.font-devanagari{ font-family: var(--font-devanagari); }
+
+.text-gold      { color: var(--color-gold); }
+.text-accent    { color: var(--color-accent); }
+.text-primary   { color: var(--color-primary); }
+
+/* ============================================================
+   SCROLL INDICATOR
+   ============================================================ */
+.scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-gold);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  animation: scrollBounce 2s ease-in-out infinite;
+  z-index: 10;
+}
+
+.scroll-indicator::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  animation: scrollLine 2s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.7; }
+  50%       { transform: translateX(-50%) translateY(8px); opacity: 1; }
+}
+
+@keyframes scrollLine {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+
+/* ============================================================
+   ORNAMENTAL DIVIDER
+   ============================================================ */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px auto;
+  max-width: 320px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-gold));
+}
+
+.divider::after {
+  background: linear-gradient(to left, transparent, var(--color-gold));
+}
+
+.divider-icon {
+  color: var(--color-gold);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   SECTION BASE
+   ============================================================ */
+.section {
+  min-height: 100vh;
+  padding: var(--section-pad-v) var(--section-pad-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   GLASSMORPHISM CARD
+   ============================================================ */
+.glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-gold));
+  color: var(--color-primary-dark);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: var(--transition-spring);
+  box-shadow: var(--shadow-gold);
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 30px rgba(212,175,55,0.5);
+}
+
+/* ============================================================
+   ORNATE BORDER (reusable mandala-inspired border)
+   ============================================================ */
+.ornate-border {
+  border: 2px solid var(--color-gold);
+  border-radius: 4px;
+  position: relative;
+  padding: 40px;
+}
+
+.ornate-border::before,
+.ornate-border::after {
+  content: '✦';
+  position: absolute;
+  color: var(--color-gold);
+  font-size: 1.4rem;
+  background: var(--color-bg);
+  line-height: 1;
+}
+
+.ornate-border::before { top: -0.7em; left: 50%; transform: translateX(-50%); padding: 0 8px; }
+.ornate-border::after  { bottom: -0.7em; left: 50%; transform: translateX(-50%); padding: 0 8px; }
+
+/* ============================================================
+   FLOATING ELEMENTS (ambient animations)
+   ============================================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(1deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--color-gold) 0%,
+    var(--color-gold-light) 40%,
+    #fff 50%,
+    var(--color-gold-light) 60%,
+    var(--color-gold) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ============================================================
+   PARTICLE CANVAS OVERLAY
+   ============================================================ */
+.particles-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* ============================================================
+   RESPONSIVE HELPERS
+   ============================================================ */
+@media (max-width: 768px) {
+  .section {
+    padding: clamp(60px, 8vh, 100px) clamp(16px, 4vw, 32px);
+  }
+  .ornate-border {
+    padding: 24px;
+  }
+}

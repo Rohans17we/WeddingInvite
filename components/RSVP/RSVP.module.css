@@ -1,0 +1,292 @@
+.section {
+  background: linear-gradient(160deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.section::before {
+  content: '🕉';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(300px, 60vw, 700px);
+  opacity: 0.03;
+  pointer-events: none;
+  animation: slowSpin 80s linear infinite;
+}
+
+@keyframes slowSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.heading {
+  font-family: var(--font-script);
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+  color: var(--color-gold);
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+
+.subheading {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.1em;
+  margin-bottom: 48px;
+  font-style: italic;
+}
+
+/* ---- Form Card ---- */
+.formCard {
+  max-width: 620px;
+  width: 100%;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 24px;
+  padding: clamp(28px, 5vw, 52px);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  z-index: 1;
+  position: relative;
+  text-align: left;
+}
+
+.field {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(212,175,55,0.8);
+  margin-bottom: 8px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--color-gold);
+  background: rgba(255,255,255,0.12);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ---- Attending toggle ---- */
+.toggleRow {
+  display: flex;
+  gap: 12px;
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(212,175,55,0.25);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggleBtn.active {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-gold));
+  color: var(--color-primary-dark);
+  border-color: transparent;
+  font-weight: 600;
+  box-shadow: var(--shadow-gold);
+}
+
+/* ---- Checkbox group ---- */
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 999px;
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.checkboxLabel:has(input:checked) {
+  background: rgba(212,175,55,0.2);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+.checkboxLabel input {
+  display: none;
+}
+
+/* ---- Party size stepper ---- */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stepBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(212,175,55,0.4);
+  background: rgba(255,255,255,0.08);
+  color: var(--color-gold);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.stepBtn:hover {
+  background: rgba(212,175,55,0.2);
+  border-color: var(--color-gold);
+}
+
+.stepValue {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* ---- Dietary ---- */
+.dietaryRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dietBtn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(212,175,55,0.25);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.dietBtn.active {
+  background: rgba(212,175,55,0.2);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+/* ---- Submit ---- */
+.submitBtn {
+  width: 100%;
+  padding: 18px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-gold));
+  color: var(--color-primary-dark);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-gold);
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(212,175,55,0.5);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- Success ---- */
+.success {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.successIcon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  display: block;
+  animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.successTitle {
+  font-family: var(--font-script);
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--color-gold);
+  margin-bottom: 12px;
+}
+
+.successMsg {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.7;
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: #ff6b6b;
+  margin-top: 12px;
+  text-align: center;
+}
