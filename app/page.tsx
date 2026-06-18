@@ -20,17 +20,40 @@ const MuteButton  = dynamic(() => import("@/components/MuteButton/MuteButton"), 
 export default function Home() {
   const [activeBurst, setActiveBurst] = useState<BurstId>("marigold");
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
+  const [scrollUnlocked, setScrollUnlocked] = useState(false);
+
+  const handleOpen = () => {
+    setEnvelopeOpened(true);
+    // Wait for the opening sequence animation to finish before unlocking scroll
+    setTimeout(() => {
+      setScrollUnlocked(true);
+    }, 2800);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scroller = e.currentTarget;
+    // When scrolled back close to the top, close the envelope and force scroll back to 0
+    if (envelopeOpened && scroller.scrollTop < 30) {
+      setEnvelopeOpened(false);
+      setScrollUnlocked(false);
+      scroller.scrollTop = 0;
+    }
+  };
 
   return (
     <>
       {/* ─── Full-screen scroll-snap container ─── */}
-      <main className={`snapContainer ${envelopeOpened ? "unlocked" : ""}`}>
+      <main 
+        className={`snapContainer ${scrollUnlocked ? "unlocked" : ""}`}
+        onScroll={handleScroll}
+      >
 
         {/* 🫙 Envelope — always first snap point */}
         <div className="snapSection envelopeSection">
           <Envelope
             activeBurst={activeBurst}
-            onOpened={() => setEnvelopeOpened(true)}
+            isOpen={envelopeOpened}
+            onOpened={handleOpen}
           />
         </div>
 

@@ -10,35 +10,44 @@ const Particles = dynamic(() => import("@tsparticles/react").then(m => m.Particl
 
 interface Props {
   activeBurst: BurstId;
+  isOpen: boolean;
   onOpened: () => void;
 }
 
-export default function Envelope({ activeBurst, onOpened }: Props) {
+export default function Envelope({ activeBurst, isOpen, onOpened }: Props) {
   const [flapOpen, setFlapOpen]       = useState(false);
   const [cardRising, setCardRising]   = useState(false);
   const [showBurst, setShowBurst]     = useState(false);
-  const [hasOpened, setHasOpened]     = useState(false);
   const burstConfig = bursts.find(b => b.id === activeBurst)!;
 
   const triggerOpen = useCallback(() => {
-    if (hasOpened) return;
-    setHasOpened(true);
-    // Step 1: open flap
-    setFlapOpen(true);
-    // Step 2: card rises (CSS handles card rising via translateY in 1.4s)
-    setCardRising(true);
-    // Step 3: burst of particles
-    setTimeout(() => setShowBurst(true), 1200);
-    // Step 4: tell parent we're done (unlock scrolling)
-    setTimeout(() => {
+    if (isOpen) return;
+    onOpened();
+  }, [isOpen, onOpened]);
+
+  // Sync state with parent's isOpen prop
+  useEffect(() => {
+    if (isOpen) {
+      setFlapOpen(true);
+      setCardRising(true);
+      
+      const t1 = setTimeout(() => setShowBurst(true), 1200);
+      const t2 = setTimeout(() => setShowBurst(false), 2800);
+      
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    } else {
+      setFlapOpen(false);
+      setCardRising(false);
       setShowBurst(false);
-      onOpened();
-    }, 2800);
-  }, [hasOpened, onOpened]);
+    }
+  }, [isOpen]);
 
   // Trigger on wheel (mouse scroll) or touch move (swipe up)
   useEffect(() => {
-    if (hasOpened) return;
+    if (isOpen) return;
 
     let touchStartY = 0;
 
@@ -70,7 +79,7 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
     };
-  }, [hasOpened, triggerOpen]);
+  }, [isOpen, triggerOpen]);
 
   // Also allow click/tap on the envelope scene
   const handleClick = () => triggerOpen();
@@ -90,7 +99,20 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
       {/* Envelope Body background and side/bottom folds */}
       <div className={styles.envelopeBody}>
         <div className={styles.envelopeBorder} />
+        <div className={styles.leftFold} />
+        <div className={styles.rightFold} />
         <div className={styles.bottomFold} />
+
+        {/* SVG overlays to draw prominent lines for envelope shape */}
+        <svg className={styles.bodyLines} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Subtle drop shadow lines behind the folds */}
+          <line x1="0" y1="100" x2="50" y2="55" stroke="#000000" strokeWidth="1.2" opacity="0.45" />
+          <line x1="100" y1="100" x2="50" y2="55" stroke="#000000" strokeWidth="1.2" opacity="0.45" />
+          
+          {/* Ornate gold lines tracing the fold edges */}
+          <line x1="0" y1="100" x2="50" y2="55" stroke="var(--color-gold)" strokeWidth="0.4" opacity="0.8" />
+          <line x1="100" y1="100" x2="50" y2="55" stroke="var(--color-gold)" strokeWidth="0.4" opacity="0.8" />
+        </svg>
       </div>
 
       {/* Card rising out */}
@@ -99,7 +121,18 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
       </div>
 
       {/* Flap & Flap Shadow */}
-      <div className={styles.flap} />
+      <div className={styles.flap}>
+        {/* SVG overlays inside flap to rotate with it in 3D */}
+        <svg className={styles.flapLines} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Shadow along flap edge */}
+          <line x1="0" y1="0" x2="50" y2="90" stroke="#000000" strokeWidth="1.2" opacity="0.45" />
+          <line x1="100" y1="0" x2="50" y2="90" stroke="#000000" strokeWidth="1.2" opacity="0.45" />
+          
+          {/* Gold highlight line along flap edge */}
+          <line x1="0" y1="0" x2="50" y2="90" stroke="var(--color-gold)" strokeWidth="0.4" opacity="0.8" />
+          <line x1="100" y1="0" x2="50" y2="90" stroke="var(--color-gold)" strokeWidth="0.4" opacity="0.8" />
+        </svg>
+      </div>
       <div className={styles.flapShadow} />
 
       {/* Wax seal */}
@@ -107,7 +140,7 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
         <div className={styles.sealDisc}>
           <span className={styles.sealInitials}>A &amp; P</span>
         </div>
-        {!hasOpened && (
+        {!isOpen && (
           <div className={styles.prompt}>
             Scroll or Click to open
             <span className={styles.promptArrow} />
@@ -126,7 +159,7 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
       )}
 
       {/* Scroll indicator at bottom */}
-      {!hasOpened && (
+      {!isOpen && (
         <div className="scroll-indicator">scroll to see the magic ✨</div>
       )}
     </section>
