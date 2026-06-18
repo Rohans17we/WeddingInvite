@@ -116,8 +116,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow: hidden;  /* main scroller handles all scrolling */
+  height: 100%;
 }
 
 body {
@@ -125,8 +125,65 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   line-height: 1.7;
-  overflow-x: hidden;
+  overflow: hidden;
+  height: 100%;
   transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* ============================================================
+   FULL-SCREEN SCROLL SNAP CONTAINER
+   Applied to <main> in page.tsx
+   ============================================================ */
+.snapContainer {
+  height: 100vh;
+  overflow-y: hidden; /* Locked by default until envelope is opened */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  /* hide scrollbar but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.snapContainer.unlocked {
+  overflow-y: scroll; /* Unlock scroll once envelope is opened */
+}
+
+.snapContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Each section snaps to fill the screen */
+.snapSection,
+.snapSectionTall {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  
+  /* Hidden by default, fades in when the scroller is unlocked */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* For sections that need more height (Our Story with polaroids) */
+.snapSectionTall {
+  height: auto;
+  min-height: 100vh;
+}
+
+/* Envelope section must always be visible/interactive */
+.snapSection.envelopeSection {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Fade sections in and enable interactions when unlocked */
+.snapContainer.unlocked .snapSection,
+.snapContainer.unlocked .snapSectionTall {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ============================================================

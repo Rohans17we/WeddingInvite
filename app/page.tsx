@@ -14,7 +14,6 @@ import Festivities   from "@/components/Festivities/Festivities";
 import RSVPForm      from "@/components/RSVP/RSVPForm";
 import Footer        from "@/components/Footer/Footer";
 
-// Lazy-load dev-only & client-only components
 const DevSwitcher = dynamic(() => import("@/components/DevSwitcher/DevSwitcher"), { ssr: false });
 const MuteButton  = dynamic(() => import("@/components/MuteButton/MuteButton"),  { ssr: false });
 
@@ -23,54 +22,65 @@ export default function Home() {
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
 
   return (
-    <main>
-      {/* 🫙 Entry — Envelope */}
-      <Envelope
-        activeBurst={activeBurst}
-        onOpened={() => setEnvelopeOpened(true)}
-      />
+    <>
+      {/* ─── Full-screen scroll-snap container ─── */}
+      <main className={`snapContainer ${envelopeOpened ? "unlocked" : ""}`}>
 
-      {/* Show rest of the site after envelope opens, or immediately if already opened */}
-      <div
-        style={{
-          opacity: envelopeOpened ? 1 : 0,
-          transition: "opacity 0.8s ease",
-          pointerEvents: envelopeOpened ? "auto" : "none",
-        }}
-      >
-        {/* 📜 Page 1 — Invitation */}
-        <InviteCard />
+        {/* 🫙 Envelope — always first snap point */}
+        <div className="snapSection envelopeSection">
+          <Envelope
+            activeBurst={activeBurst}
+            onOpened={() => setEnvelopeOpened(true)}
+          />
+        </div>
 
-        {/* 💌 Page 2 — Save the Date */}
-        <SaveTheDate />
+        {/* 📜 Page 1 */}
+        <div className="snapSection">
+          <InviteCard />
+        </div>
 
-        {/* ⏳ Page 3 — Countdown */}
-        <Countdown />
+        {/* 💌 Page 2 */}
+        <div className="snapSection">
+          <SaveTheDate />
+        </div>
 
-        {/* 📸 Page 4 — Our Story */}
-        <OurStory />
+        {/* ⏳ Page 3 */}
+        <div className="snapSection">
+          <Countdown />
+        </div>
 
-        {/* 📍 Page 5 — Venue */}
-        <Venue />
+        {/* 📸 Page 4 — taller for polaroids */}
+        <div className="snapSection">
+          <OurStory />
+        </div>
 
-        {/* 🎊 Page 6 — Festivities */}
-        <Festivities />
+        {/* 📍 Page 5 */}
+        <div className="snapSection">
+          <Venue />
+        </div>
 
-        {/* 💌 Page 7 — RSVP */}
-        <RSVPForm />
+        {/* 🎊 Page 6 */}
+        <div className="snapSection">
+          <Festivities />
+        </div>
+
+        {/* 💌 Page 7 */}
+        <div className="snapSection">
+          <RSVPForm />
+        </div>
 
         {/* 🏁 Footer */}
-        <Footer />
-      </div>
+        <div className="snapSection">
+          <Footer />
+        </div>
+      </main>
 
-      {/* 🎵 Floating mute button */}
+      {/* Floating UI — outside snap container so they stay fixed */}
       <MuteButton />
-
-      {/* 🎨 Dev-only theme switcher (hidden in production) */}
       <DevSwitcher
         activeBurst={activeBurst}
         onBurstChange={setActiveBurst}
       />
-    </main>
+    </>
   );
 }

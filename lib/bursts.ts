@@ -1,12 +1,10 @@
-import type { ISourceOptions } from "@tsparticles/react";
-
 export type BurstId = "marigold" | "stars" | "rose" | "lotus";
 
 export interface BurstConfig {
   id: BurstId;
   label: string;
   emoji: string;
-  options: ISourceOptions;
+  options: any; // Using any to avoid version mismatch issues in @tsparticles type exports
 }
 
 const baseConfig = {

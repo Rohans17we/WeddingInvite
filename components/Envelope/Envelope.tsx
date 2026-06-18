@@ -18,7 +18,6 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
   const [cardRising, setCardRising]   = useState(false);
   const [showBurst, setShowBurst]     = useState(false);
   const [hasOpened, setHasOpened]     = useState(false);
-  const wrapperRef                    = useRef<HTMLDivElement>(null);
   const burstConfig = bursts.find(b => b.id === activeBurst)!;
 
   const triggerOpen = useCallback(() => {
@@ -26,61 +25,95 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
     setHasOpened(true);
     // Step 1: open flap
     setFlapOpen(true);
-    // Step 2: card rises
-    setTimeout(() => setCardRising(true), 800);
-    // Step 3: burst
+    // Step 2: card rises (CSS handles card rising via translateY in 1.4s)
+    setCardRising(true);
+    // Step 3: burst of particles
     setTimeout(() => setShowBurst(true), 1200);
-    // Step 4: tell parent we're done
+    // Step 4: tell parent we're done (unlock scrolling)
     setTimeout(() => {
       setShowBurst(false);
       onOpened();
     }, 2800);
   }, [hasOpened, onOpened]);
 
-  // Trigger on scroll
+  // Trigger on wheel (mouse scroll) or touch move (swipe up)
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 60) triggerOpen();
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [triggerOpen]);
+    if (hasOpened) return;
 
-  // Also allow click/tap
+    let touchStartY = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      // detect scroll down
+      if (e.deltaY > 10) {
+        triggerOpen();
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touchEndY = e.touches[0].clientY;
+      const diffY = touchStartY - touchEndY; // positive means swipe up
+      if (diffY > 30) {
+        triggerOpen();
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [hasOpened, triggerOpen]);
+
+  // Also allow click/tap on the envelope scene
   const handleClick = () => triggerOpen();
 
   return (
-    <section className={styles.scene} id="envelope" onClick={handleClick}>
+    <section 
+      className={`${styles.scene} ${flapOpen ? styles.opened : ""}`} 
+      id="envelope" 
+      onClick={handleClick}
+    >
       {/* Corner ornaments */}
       <span className={`${styles.corner} ${styles.tl}`}>❧</span>
       <span className={`${styles.corner} ${styles.tr}`}>❧</span>
       <span className={`${styles.corner} ${styles.bl}`}>❧</span>
       <span className={`${styles.corner} ${styles.br}`}>❧</span>
 
-      <div className={styles.envelopeWrapper} ref={wrapperRef}>
-        <div className={styles.envelope}>
-          {/* Card inside */}
-          <div className={`${styles.card} ${cardRising ? styles.rising : ""}`}>
-            <span className={styles.cardContent}>With love ♥</span>
-          </div>
-
-          {/* Flap */}
-          <div className={`${styles.flap} ${flapOpen ? styles.open : ""}`} />
-
-          {/* Wax seal */}
-          <div className={styles.seal}>
-            <span className={styles.sealText}>A &amp; P</span>
-          </div>
-        </div>
+      {/* Envelope Body background and side/bottom folds */}
+      <div className={styles.envelopeBody}>
+        <div className={styles.envelopeBorder} />
+        <div className={styles.bottomFold} />
       </div>
 
-      {/* Scroll / tap prompt */}
-      {!hasOpened && (
-        <div className={styles.prompt}>
-          Scroll to open
-          <span className={styles.promptArrow} />
+      {/* Card rising out */}
+      <div className={styles.cardPeek}>
+        <span className={styles.cardPeekContent}>With love ♥</span>
+      </div>
+
+      {/* Flap & Flap Shadow */}
+      <div className={styles.flap} />
+      <div className={styles.flapShadow} />
+
+      {/* Wax seal */}
+      <div className={styles.seal}>
+        <div className={styles.sealDisc}>
+          <span className={styles.sealInitials}>A &amp; P</span>
         </div>
-      )}
+        {!hasOpened && (
+          <div className={styles.prompt}>
+            Scroll or Click to open
+            <span className={styles.promptArrow} />
+          </div>
+        )}
+      </div>
 
       {/* Particle burst */}
       {showBurst && (
@@ -99,3 +132,4 @@ export default function Envelope({ activeBurst, onOpened }: Props) {
     </section>
   );
 }
+
