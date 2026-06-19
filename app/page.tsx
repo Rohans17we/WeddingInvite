@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import { AnimatePresence } from "framer-motion";
 import type { BurstId } from "@/lib/bursts";
 
 // Components
+import Preloader     from "@/components/Preloader/Preloader";
 import Envelope      from "@/components/Envelope/Envelope";
 import InviteCard    from "@/components/InviteCard/InviteCard";
 import SaveTheDate   from "@/components/SaveTheDate/SaveTheDate";
@@ -18,6 +20,7 @@ const DevSwitcher = dynamic(() => import("@/components/DevSwitcher/DevSwitcher")
 const MuteButton  = dynamic(() => import("@/components/MuteButton/MuteButton"),  { ssr: false });
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
   const [activeBurst, setActiveBurst] = useState<BurstId>("marigold");
   const [envelopeState, setEnvelopeState] = useState<"closed" | "open" | "scrolled">("closed");
   const mainRef = useRef<HTMLDivElement>(null);
@@ -90,10 +93,17 @@ export default function Home() {
 
   return (
     <>
+      <AnimatePresence mode="wait">
+        {isLoading && (
+          <Preloader onComplete={() => setIsLoading(false)} />
+        )}
+      </AnimatePresence>
+
       {/* ─── Full-screen scroll-snap container ─── */}
       <main 
         ref={mainRef}
         className={`snapContainer ${envelopeState === "scrolled" ? "unlocked" : ""}`}
+        style={{ pointerEvents: isLoading ? "none" : "auto" }}
       >
 
         {/* 🫙 Envelope — always first snap point */}
