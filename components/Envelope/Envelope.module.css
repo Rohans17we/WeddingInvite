@@ -387,7 +387,21 @@
 /* ══════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════ */
-@media (max-width: 480px) {
+@media (max-width: 1024px) {
+  .envelope {
+    width: 200%;
+    left: -50%;
+    height: 95%;
+    top: 2.5%;
+  }
+
+  .cardPeek {
+    left: 28.75%;
+    right: 28.75%;
+    height: 80%;
+    top: 10%;
+  }
+
   .flap {
     height: 50%;
   }
