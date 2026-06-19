@@ -140,7 +140,9 @@ export default function Envelope({ activeBurst, state, onScrollDown, onScrollUp 
             <div className={styles.cardLine1}>With Love</div>
             <div className={styles.cardLine2}>From</div>
             <div className={styles.cardLine3}>
-              Ritik <span className={styles.ampersand}>&amp;</span> Ameesha
+              <span className={styles.name}>Ritik</span>
+              <span className={styles.ampersand}>&amp;</span>
+              <span className={styles.name}>Ameesha</span>
             </div>
           </div>
         </div>
