@@ -137,9 +137,11 @@ export default function Envelope({ activeBurst, state, onScrollDown, onScrollUp 
         {/* Card rising out */}
         <div className={styles.cardPeek}>
           <div className={styles.cardPeekContent}>
-            <div className={styles.cardLine1}>WITH LOVE</div>
-            <div className={styles.cardLine2}>FROM</div>
-            <div className={styles.cardLine3}>ritik &amp; ameesha</div>
+            <div className={styles.cardLine1}>With Love</div>
+            <div className={styles.cardLine2}>From</div>
+            <div className={styles.cardLine3}>
+              Ritik <span className={styles.ampersand}>&amp;</span> Ameesha
+            </div>
           </div>
         </div>
 
