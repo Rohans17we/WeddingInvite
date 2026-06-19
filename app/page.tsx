@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence } from "framer-motion";
 import type { BurstId } from "@/lib/bursts";
@@ -25,16 +25,30 @@ export default function Home() {
   const [unlocked, setUnlocked] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // Called by EnvelopeHero once animation completes and user scrolls down again
+  // Pending scroll flag: set when we want to scroll to next section.
+  // A useEffect watches this + unlocked to fire after the DOM paints the unlocked state.
+  const pendingScrollRef = useRef(false);
+
+  // Called by EnvelopeHero once the close animation finishes and navigation should happen
   const handleScrollToNext = () => {
-    setUnlocked(true);
-    // Give the DOM one frame to apply the unlocked class, then scroll
-    setTimeout(() => {
-      if (mainRef.current) {
-        mainRef.current.scrollTo({ top: window.innerHeight, behavior: "smooth" });
-      }
-    }, 50);
+    pendingScrollRef.current = true;
+    setUnlocked(true); // triggers re-render; useEffect below fires after DOM updates
   };
+
+
+  // Fire the scroll to InviteCard AFTER the DOM has applied the unlocked class.
+  // This useEffect runs after every render where unlocked changes to true.
+  useEffect(() => {
+    if (unlocked && pendingScrollRef.current && mainRef.current) {
+      pendingScrollRef.current = false;
+      // Double-rAF ensures the browser has painted the new overflow-y: scroll
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          mainRef.current?.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+        });
+      });
+    }
+  }, [unlocked]);
 
   // Re-lock the container when the user scrolls back to the envelope section
   // so EnvelopeHero intercepts scroll events again
