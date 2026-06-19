@@ -19,16 +19,42 @@ const MuteButton  = dynamic(() => import("@/components/MuteButton/MuteButton"), 
 
 export default function Home() {
   const [activeBurst, setActiveBurst] = useState<BurstId>("marigold");
-  const [envelopeOpened, setEnvelopeOpened] = useState(false);
-  const [scrollUnlocked, setScrollUnlocked] = useState(false);
+  const [envelopeState, setEnvelopeState] = useState<"closed" | "open" | "scrolled">("closed");
   const mainRef = useRef<HTMLDivElement>(null);
+  const hasScrolledDown = useRef(false);
+  const lastTransitionTime = useRef(0);
 
-  const handleOpen = () => {
-    setEnvelopeOpened(true);
-    // Wait for the opening sequence animation to finish before unlocking scroll
-    setTimeout(() => {
-      setScrollUnlocked(true);
-    }, 2800);
+  const handleScrollDown = () => {
+    const now = Date.now();
+    if (now - lastTransitionTime.current < 1200) return; // Cooldown to allow animations/gestures to finish
+
+    if (envelopeState === "closed") {
+      setEnvelopeState("open");
+      lastTransitionTime.current = now;
+    } else if (envelopeState === "open") {
+      setEnvelopeState("scrolled");
+      lastTransitionTime.current = now;
+      hasScrolledDown.current = false;
+      // Give the DOM a tiny frame to apply "unlocked" layout before we trigger smooth scroll
+      setTimeout(() => {
+        if (mainRef.current) {
+          mainRef.current.scrollTo({
+            top: window.innerHeight,
+            behavior: "smooth"
+          });
+        }
+      }, 50);
+    }
+  };
+
+  const handleScrollUp = () => {
+    const now = Date.now();
+    if (now - lastTransitionTime.current < 1200) return;
+
+    if (envelopeState === "open") {
+      setEnvelopeState("closed");
+      lastTransitionTime.current = now;
+    }
   };
 
   useEffect(() => {
@@ -37,10 +63,17 @@ export default function Home() {
 
     const handleNativeScroll = () => {
       const scrollTop = scroller.scrollTop || window.scrollY;
-      // When scrolled back close to the top, close the envelope and lock scroller
-      if (envelopeOpened && scrollTop < 30) {
-        setEnvelopeOpened(false);
-        setScrollUnlocked(false);
+
+      // Track if they have actually scrolled down past the first section
+      if (envelopeState === "scrolled" && scrollTop > 100) {
+        hasScrolledDown.current = true;
+      }
+
+      // If they are scrolled down, and scroll back to Section 0 (scrollTop < 30)
+      if (envelopeState === "scrolled" && hasScrolledDown.current && scrollTop < 30) {
+        setEnvelopeState("open");
+        hasScrolledDown.current = false;
+        lastTransitionTime.current = Date.now(); // Apply cooldown on reset to absorb momentum
         scroller.scrollTop = 0;
         window.scrollTo({ top: 0 });
       }
@@ -53,22 +86,23 @@ export default function Home() {
       scroller.removeEventListener("scroll", handleNativeScroll);
       window.removeEventListener("scroll", handleNativeScroll);
     };
-  }, [envelopeOpened]);
+  }, [envelopeState]);
 
   return (
     <>
       {/* ─── Full-screen scroll-snap container ─── */}
       <main 
         ref={mainRef}
-        className={`snapContainer ${scrollUnlocked ? "unlocked" : ""}`}
+        className={`snapContainer ${envelopeState === "scrolled" ? "unlocked" : ""}`}
       >
 
         {/* 🫙 Envelope — always first snap point */}
         <div className="snapSection envelopeSection">
           <Envelope
             activeBurst={activeBurst}
-            isOpen={envelopeOpened}
-            onOpened={handleOpen}
+            state={envelopeState}
+            onScrollDown={handleScrollDown}
+            onScrollUp={handleScrollUp}
           />
         </div>
 

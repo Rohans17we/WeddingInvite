@@ -70,7 +70,7 @@ export default function InviteCard() {
         >
           {/* Groom */}
           <div className={styles.familyCard}>
-            <h2 className={styles.personName}>[GROOM_NAME]</h2>
+            <h2 className={styles.personName}>Ritik</h2>
             <p className={styles.parentsLabel}>Son of</p>
             <p className={styles.parentsName}>
               [GROOM_FATHER]<br />
@@ -83,7 +83,7 @@ export default function InviteCard() {
 
           {/* Bride */}
           <div className={styles.familyCard}>
-            <h2 className={styles.personName}>[BRIDE_NAME]</h2>
+            <h2 className={styles.personName}>Ameesha</h2>
             <p className={styles.parentsLabel}>Daughter of</p>
             <p className={styles.parentsName}>
               [BRIDE_FATHER]<br />

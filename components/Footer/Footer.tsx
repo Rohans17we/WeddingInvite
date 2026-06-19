@@ -47,7 +47,7 @@ export default function Footer() {
           color: "rgba(212,175,55,0.6)",
           margin: "16px 0 32px",
         }}>
-          [GROOM_NAME] &amp; [BRIDE_NAME] · [DD Month YYYY]
+          Ritik &amp; Ameesha · [DD Month YYYY]
         </p>
 
         <div style={{
