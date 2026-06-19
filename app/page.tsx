@@ -20,7 +20,7 @@ const DevSwitcher = dynamic(() => import("@/components/DevSwitcher/DevSwitcher")
 const MuteButton  = dynamic(() => import("@/components/MuteButton/MuteButton"),  { ssr: false });
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeBurst, setActiveBurst] = useState<BurstId>("marigold");
   const [envelopeState, setEnvelopeState] = useState<"closed" | "open" | "scrolled">("closed");
   const mainRef = useRef<HTMLDivElement>(null);
