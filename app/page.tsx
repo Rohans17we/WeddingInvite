@@ -36,6 +36,17 @@ export default function Home() {
     }, 50);
   };
 
+  // Re-lock the container when the user scrolls back to the envelope section
+  // so EnvelopeHero intercepts scroll events again
+  const handleMainScroll = () => {
+    const el = mainRef.current;
+    if (!el || !unlocked) return;
+    if (el.scrollTop < 10) {
+      setUnlocked(false);
+    }
+  };
+
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -49,6 +60,7 @@ export default function Home() {
         ref={mainRef}
         className={`snapContainer${unlocked ? " unlocked" : ""}`}
         style={{ pointerEvents: isLoading ? "none" : "auto" }}
+        onScroll={handleMainScroll}
       >
 
         {/* 🫙 Envelope — first snap section, always visible */}

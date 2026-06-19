@@ -13,6 +13,10 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   // Whether the opening animation has fully completed
   const isOpenRef = useRef(false);
+  // Whether we are reversing to navigate to next section or just to close
+  const reverseIntentRef = useRef<"next" | "close">("close");
+  // Whether we are mid-transition (closing before navigating) — block new gestures
+  const isTransitioningRef = useRef(false);
   // Ref so scroll handlers always see the latest callback
   const onScrollToNextRef = useRef(onScrollToNext);
   useEffect(() => { onScrollToNextRef.current = onScrollToNext; }, [onScrollToNext]);
@@ -49,8 +53,19 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power2.inOut" },
-        onComplete: () => { isOpenRef.current = true; },
-        onReverseComplete: () => { isOpenRef.current = false; },
+        onComplete: () => {
+          isOpenRef.current = true;
+          isTransitioningRef.current = false;
+        },
+        onReverseComplete: () => {
+          isOpenRef.current = false;
+          isTransitioningRef.current = false;
+          // If we closed in order to navigate forward, do it now
+          if (reverseIntentRef.current === "next") {
+            reverseIntentRef.current = "close";
+            onScrollToNextRef.current();
+          }
+        },
       });
 
       tl
@@ -107,26 +122,26 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
   // 3. Scroll and swipe gesture detection
   useEffect(() => {
     let touchStartY = 0;
-    // Cooldown to prevent rapid repeated triggers
-    let lastScrollTime = 0;
 
     const handleWheel = (e: WheelEvent) => {
       const tl = timelineRef.current;
-      if (!tl) return;
+      if (!tl || isTransitioningRef.current) return;
 
       if (e.deltaY > 10) {
         if (isOpenRef.current) {
-          // Animation done — hand off to parent to scroll to next section
-          const now = Date.now();
-          if (now - lastScrollTime > 1200) {
-            lastScrollTime = now;
-            onScrollToNextRef.current();
-          }
+          // Card is visible — close the envelope first, then navigate forward
+          isTransitioningRef.current = true;
+          reverseIntentRef.current = "next";
+          tl.reverse();
         } else {
+          // Envelope is closed — play the open animation
           tl.play();
         }
       } else if (e.deltaY < -10) {
-        if (!isOpenRef.current) {
+        if (isOpenRef.current) {
+          // Card is visible — close the envelope and stay here
+          isTransitioningRef.current = true;
+          reverseIntentRef.current = "close";
           tl.reverse();
         }
       }
@@ -138,23 +153,23 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
 
     const handleTouchMove = (e: TouchEvent) => {
       const tl = timelineRef.current;
-      if (!tl) return;
+      if (!tl || isTransitioningRef.current) return;
 
       const touchEndY = e.touches[0].clientY;
       const diffY = touchStartY - touchEndY;
 
       if (diffY > 30) {
         if (isOpenRef.current) {
-          const now = Date.now();
-          if (now - lastScrollTime > 1200) {
-            lastScrollTime = now;
-            onScrollToNextRef.current();
-          }
+          isTransitioningRef.current = true;
+          reverseIntentRef.current = "next";
+          tl.reverse();
         } else {
           tl.play();
         }
       } else if (diffY < -30) {
-        if (!isOpenRef.current) {
+        if (isOpenRef.current) {
+          isTransitioningRef.current = true;
+          reverseIntentRef.current = "close";
           tl.reverse();
         }
       }
