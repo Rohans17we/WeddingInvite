@@ -1,178 +1,52 @@
 .section {
-  background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-surface) 100%);
-  text-align: center;
-  position: relative;
-}
-
-/* Mandala background watermark */
-.section::before {
-  content: '🕉';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(200px, 40vw, 500px);
-  opacity: 0.04;
-  pointer-events: none;
-  line-height: 1;
-  animation: slowSpin 60s linear infinite;
-}
-
-@keyframes slowSpin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to   { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.inner {
-  max-width: 760px;
+  min-height: 100vh;
   width: 100%;
-  z-index: 1;
   position: relative;
-  border: 1px solid rgba(212,175,55,0.3);
-  border-radius: 8px;
-  padding: clamp(32px, 5vw, 64px);
-  background: rgba(255,255,255,0.6);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 8px 48px rgba(0,0,0,0.08);
+  overflow: hidden;
+  background-color: var(--color-bg);
 }
 
-/* Gold corner ornaments */
-.inner::before,
-.inner::after {
-  content: '✦';
-  position: absolute;
-  color: var(--color-gold);
-  font-size: 1.2rem;
-}
-
-.inner::before { top: -0.6em; left: 50%; transform: translateX(-50%); background: var(--color-bg); padding: 0 12px; }
-.inner::after  { bottom: -0.6em; left: 50%; transform: translateX(-50%); background: var(--color-bg); padding: 0 12px; }
-
-.ganeshWrapper {
-  margin: 0 auto 20px;
-  width: clamp(100px, 20vw, 160px);
-  height: clamp(100px, 20vw, 160px);
-  position: relative;
-}
-
-.ganeshWrapper::before {
-  content: '';
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%);
-  animation: ganeshGlow 3s ease-in-out infinite;
-}
-
-@keyframes ganeshGlow {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50%       { transform: scale(1.1); opacity: 1; }
-}
-
-.ganeshImg {
+/* Desktop Video (Shown only on Desktop viewports) */
+.desktopVideoContainer {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 16px rgba(212,175,55,0.4));
+  position: absolute;
+  inset: 0;
+  z-index: 5;
 }
 
-.ganeshFallback {
+.desktopVideo {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(60px, 12vw, 100px);
-  filter: drop-shadow(0 4px 12px rgba(212,175,55,0.5));
+  object-fit: cover;
 }
 
-.om {
-  font-family: var(--font-devanagari);
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
-  color: var(--color-gold);
-  letter-spacing: 0.15em;
-  margin-bottom: 6px;
-  font-weight: 500;
+/* Mobile/Tablet Video (Hidden by default on Desktop) */
+.mobileVideoContainer {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
 }
 
-.blessing {
-  font-family: var(--font-script);
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  color: var(--color-primary);
-  line-height: 1.2;
-  margin-bottom: 4px;
+.mobileVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.subtitle {
-  font-family: var(--font-body);
-  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-  color: var(--color-text-light);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  margin-bottom: 32px;
-}
-
-.familyGrid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 16px 24px;
-  align-items: center;
-  margin-top: 24px;
-}
-
-.familyCard {
-  background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02));
-  border: 1px solid rgba(212,175,55,0.2);
-  border-radius: 12px;
-  padding: clamp(16px, 3vw, 28px);
-}
-
-.personName {
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
-  font-weight: 600;
-  color: var(--color-primary);
-  line-height: 1.2;
-  margin-bottom: 8px;
-}
-
-.parentsLabel {
-  font-family: var(--font-body);
-  font-size: clamp(0.7rem, 1.2vw, 0.8rem);
-  color: var(--color-text-light);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.parentsName {
-  font-family: var(--font-body);
-  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
-  color: var(--color-text);
-  font-style: italic;
-  line-height: 1.5;
-}
-
-.andSymbol {
-  font-family: var(--font-script);
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  color: var(--color-gold);
-  text-align: center;
-  line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(212,175,55,0.4));
-}
-
-.scrollIndicator {
-  margin-top: 40px;
-}
-
-@media (max-width: 600px) {
-  .familyGrid {
-    grid-template-columns: 1fr;
-    gap: 8px;
+/* ══════════════════════════════════════
+   RESPONSIVE POLISH (TABLET & MOBILE)
+   ══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .desktopVideoContainer {
+    display: none;
   }
 
-  .andSymbol {
-    font-size: 2.5rem;
+  .mobileVideoContainer {
+    display: block;
   }
 }
