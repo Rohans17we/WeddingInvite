@@ -6,6 +6,7 @@ import type { BurstId } from "@/lib/bursts";
 
 // Components
 import Preloader     from "@/components/Preloader/Preloader";
+import EnvelopeHero  from "@/components/EnvelopeHero/EnvelopeHero";
 import InviteCard    from "@/components/InviteCard/InviteCard";
 import SaveTheDate   from "@/components/SaveTheDate/SaveTheDate";
 import Countdown     from "@/components/Countdown/Countdown";
@@ -21,7 +22,19 @@ const MuteButton  = dynamic(() => import("@/components/MuteButton/MuteButton"), 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeBurst, setActiveBurst] = useState<BurstId>("marigold");
+  const [unlocked, setUnlocked] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
+
+  // Called by EnvelopeHero once animation completes and user scrolls down again
+  const handleScrollToNext = () => {
+    setUnlocked(true);
+    // Give the DOM one frame to apply the unlocked class, then scroll
+    setTimeout(() => {
+      if (mainRef.current) {
+        mainRef.current.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+      }
+    }, 50);
+  };
 
   return (
     <>
@@ -32,11 +45,16 @@ export default function Home() {
       </AnimatePresence>
 
       {/* ─── Full-screen scroll-snap container ─── */}
-      <main 
+      <main
         ref={mainRef}
-        className="snapContainer unlocked"
+        className={`snapContainer${unlocked ? " unlocked" : ""}`}
         style={{ pointerEvents: isLoading ? "none" : "auto" }}
       >
+
+        {/* 🫙 Envelope — first snap section, always visible */}
+        <div className="snapSection envelopeSection">
+          <EnvelopeHero onScrollToNext={handleScrollToNext} />
+        </div>
 
         {/* 📜 Page 1 */}
         <div className="snapSection">
