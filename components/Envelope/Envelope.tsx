@@ -37,9 +37,20 @@ export default function Envelope({ activeBurst, state, onScrollDown, onScrollUp 
 
   // 2. Set up the GSAP timeline once the SVG content is loaded
   useEffect(() => {
-    if (!svgContent || !containerRef.current) return;
+    console.log("Envelope: svgContent loaded, length:", svgContent?.length);
+    if (!svgContent || !containerRef.current) {
+      console.log("Envelope: svgContent or containerRef is empty/null");
+      return;
+    }
 
     const ctx = gsap.context(() => {
+      console.log("Envelope: Inside gsap.context. Elements found:", {
+        arrow: document.querySelector("#arrow"),
+        button: document.querySelector("#button"),
+        closed: document.querySelector("#closed"),
+        paper: document.querySelector("#paper")
+      });
+
       // Configure initial states
       gsap.set("#paper-mask-full", { autoAlpha: 0 });
 
@@ -113,8 +124,10 @@ export default function Envelope({ activeBurst, state, onScrollDown, onScrollUp 
         .from("#shadows-inner", { autoAlpha: 0, y: "+=2", duration: 0.3 }, "-=0.2");
 
       timelineRef.current = tl;
+      console.log("Envelope: GSAP timeline created successfully");
 
       // Sync with current state immediately on load
+      console.log("Envelope: Syncing initial state on load:", state);
       if (state === "open" || state === "scrolled") {
         tl.progress(1);
       } else {
@@ -122,22 +135,29 @@ export default function Envelope({ activeBurst, state, onScrollDown, onScrollUp 
       }
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      console.log("Envelope: Reverting GSAP context");
+      ctx.revert();
+    };
   }, [svgContent]);
 
   // 3. Sync state changes from parent state machine
   useEffect(() => {
     const tl = timelineRef.current;
+    console.log("Envelope: state changed effect running. State:", state, "Has timeline:", !!tl);
     if (!tl) return;
 
     const prev = prevStateRef.current;
     prevStateRef.current = state;
+    console.log("Envelope: transition from", prev, "to", state);
 
     if (state === "open" || state === "scrolled") {
+      console.log("Envelope: Playing timeline");
       tl.play();
 
       // Trigger particle burst if transitioning from closed to open
       if (prev === "closed" && state === "open") {
+        console.log("Envelope: Triggering burst particles");
         const t1 = setTimeout(() => setShowBurst(true), 1200);
         const t2 = setTimeout(() => setShowBurst(false), 2800);
         return () => {
@@ -146,6 +166,7 @@ export default function Envelope({ activeBurst, state, onScrollDown, onScrollUp 
         };
       }
     } else {
+      console.log("Envelope: Reversing timeline");
       tl.reverse();
       setShowBurst(false);
     }
