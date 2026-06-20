@@ -350,12 +350,29 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
             position: absolute !important;
           }
           #paper {
-            x: 535px !important;
-            width: 377.5px !important;
+            x: 555.8px !important;
+            width: 336px !important;
           }
           .card-wrapper-safari {
-            left: 23%;
-            width: 53.9%;
+            left: 26%;
+            width: 48%;
+          }
+          .card-inner {
+            padding: 15px;
+          }
+          .card-content {
+            width: 90%;
+            height: 90%;
+            gap: 10px;
+          }
+          .card-line-1, .card-line-2 {
+            font-size: 22px;
+          }
+          .card-line-3 {
+            font-size: 38px;
+          }
+          .card-ampersand {
+            font-size: 20px;
           }
         }
       `}</style>
