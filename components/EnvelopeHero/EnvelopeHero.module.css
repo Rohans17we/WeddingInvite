@@ -1,0 +1,17 @@
+/* EnvelopeHero.module.css */
+
+.envelopeSection {
+  height: 100vh;
+  height: 100dvh; /* Safari: dynamic viewport excludes browser chrome */
+  min-height: -webkit-fill-available;
+  width: 100vw;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+}

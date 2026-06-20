@@ -136,6 +136,7 @@ body {
    ============================================================ */
 .snapContainer {
   height: 100vh;
+  height: 100dvh; /* Safari 15.4+: respects dynamic viewport (excludes browser chrome) */
   overflow-y: hidden; /* Locked by default until envelope is opened */
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
@@ -158,6 +159,7 @@ body {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   height: 100vh;
+  height: 100dvh; /* Safari fix */
   overflow: hidden;
   position: relative;
   

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
+import styles from "./EnvelopeHero.module.css";
 
 interface Props {
   /** Called when the envelope animation finishes and the user scrolls down again */
@@ -11,17 +12,13 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
   const [svgContent, setSvgContent] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  // Whether the opening animation has fully completed
   const isOpenRef = useRef(false);
-  // Whether we are reversing to navigate to next section or just to close
   const reverseIntentRef = useRef<"next" | "close">("close");
-  // Whether we are mid-transition (closing before navigating) — block new gestures
   const isTransitioningRef = useRef(false);
-  // Ref so scroll handlers always see the latest callback
   const onScrollToNextRef = useRef(onScrollToNext);
   useEffect(() => { onScrollToNextRef.current = onScrollToNext; }, [onScrollToNext]);
 
-  // 1. Fetch the reference SVG at runtime
+  // 1. Fetch the reference SVG at runtime — exactly as /envelope does, no modifications
   useEffect(() => {
     fetch("/envelope-reference.svg")
       .then((res) => {
@@ -32,7 +29,7 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
       .catch((err) => console.error("Error loading envelope SVG:", err));
   }, []);
 
-  // 2. Set up the GSAP timeline once the SVG content is loaded
+  // 2. GSAP timeline — exact copy of /envelope/page.tsx
   useEffect(() => {
     if (!svgContent || !containerRef.current) return;
 
@@ -49,7 +46,6 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         ease: "power1.inOut",
       });
 
-      // Create timeline
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power2.inOut" },
@@ -60,7 +56,6 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         onReverseComplete: () => {
           isOpenRef.current = false;
           isTransitioningRef.current = false;
-          // If we closed in order to navigate forward, do it now
           if (reverseIntentRef.current === "next") {
             reverseIntentRef.current = "close";
             onScrollToNextRef.current();
@@ -84,30 +79,17 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         })
 
         // 3. Pattern top emergence (inside flap lining)
-        .from(
-          "#pattern-top",
-          {
-            duration: 1.2,
-            transformOrigin: "center bottom",
-            scaleY: 0,
-            ease: "power1.inOut",
-          },
-          "-=1.0"
-        )
+        .from("#pattern-top", {
+          duration: 1.2,
+          transformOrigin: "center bottom",
+          scaleY: 0,
+          ease: "power1.inOut",
+        }, "-=1.0")
 
         // 4. Paper card sliding out
-        .fromTo(
-          "#paper",
-          { y: 350 },
-          { y: 0, duration: 1.8 },
-          "-=1.8"
-        )
+        .fromTo("#paper", { y: 350 }, { y: 0, duration: 1.8 }, "-=1.8")
         .to("#paper-mask", { y: "+=500", duration: 2.2 })
-        .to(
-          "#envelope-interactive",
-          { y: 500, duration: 2.3 },
-          "<"
-        )
+        .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<")
 
         // 5. Final inner shadow reveal
         .to("#paper-mask-full", { autoAlpha: 1, duration: 0.01 }, "-=0.8")
@@ -129,17 +111,14 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
 
       if (e.deltaY > 10) {
         if (isOpenRef.current) {
-          // Card is visible — close the envelope first, then navigate forward
           isTransitioningRef.current = true;
           reverseIntentRef.current = "next";
           tl.reverse();
         } else {
-          // Envelope is closed — play the open animation
           tl.play();
         }
       } else if (e.deltaY < -10) {
         if (isOpenRef.current) {
-          // Card is visible — close the envelope and stay here
           isTransitioningRef.current = true;
           reverseIntentRef.current = "close";
           tl.reverse();
@@ -186,11 +165,9 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
     };
   }, []);
 
-  // Click handler to toggle envelope state
   const handleToggle = () => {
     const tl = timelineRef.current;
     if (!tl) return;
-
     if (isOpenRef.current) {
       tl.reverse();
     } else {
@@ -200,22 +177,13 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
 
   return (
     <section
-      style={{
-        height: "100vh",
-        width: "100vw",
-        backgroundImage: "url('/textures/envelope-inside-page.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-        overflow: "hidden",
-        flexShrink: 0,
-      }}
+      className={styles.envelopeSection}
+      style={{ backgroundImage: "url('/textures/envelope-inside-page.png')" }}
+      onClick={handleToggle}
     >
+      {/* Same styles as /envelope/page.tsx */}
       <style>{`
-        svg {
+        .envelope-hero-svg-host svg {
           width: 97vw !important;
           height: 97vh !important;
           margin: 0 auto !important;
@@ -295,9 +263,7 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           flex-wrap: wrap;
         }
 
-        .card-name {
-          display: inline-block;
-        }
+        .card-name { display: inline-block; }
 
         .card-ampersand {
           font-size: 24px;
@@ -308,13 +274,12 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         }
 
         @media (max-width: 1024px) {
-          svg {
+          .envelope-hero-svg-host svg {
             width: 200vw !important;
             height: 97vh !important;
             left: -50vw !important;
             position: absolute !important;
           }
-
           #paper {
             x: 535px !important;
             width: 377.5px !important;
@@ -322,10 +287,9 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         }
       `}</style>
 
-      {/* SVG Container */}
       <div
         ref={containerRef}
-        onClick={handleToggle}
+        className="envelope-hero-svg-host"
         style={{
           width: "100%",
           height: "100%",
