@@ -360,20 +360,41 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           .card-inner {
             padding: 15px;
           }
+          .card-inner::before {
+            inset: -10px -10px -10px -10px; /* Greatly reduce negative inset so flowers are visible */
+          }
           .card-content {
             width: 90%;
             height: 90%;
             gap: 10px;
           }
-          .card-line-1, .card-line-2 {
-            font-size: 22px;
-          }
-          .card-line-3 {
-            font-size: 38px;
-          }
-          .card-ampersand {
-            font-size: 20px;
-          }
+          .card-line-1, .card-line-2 { font-size: 22px; }
+          .card-line-3 { font-size: 38px; }
+          .card-ampersand { font-size: 20px; }
+        }
+
+        /* Specific fix for iPhone Mini / SE */
+        @media (max-width: 375px) {
+          .card-line-1, .card-line-2 { font-size: 18px; }
+          .card-line-3 { font-size: 32px; }
+          .card-ampersand { font-size: 16px; }
+          .card-inner::before { inset: -5px -5px -5px -5px; }
+        }
+
+        /* Specific fix for standard iPhones (13, 14, 15, 16 Pro) */
+        @media (min-width: 376px) and (max-width: 400px) {
+          .card-line-1, .card-line-2 { font-size: 20px; }
+          .card-line-3 { font-size: 36px; }
+          .card-ampersand { font-size: 18px; }
+          .card-inner::before { inset: -8px -8px -8px -8px; }
+        }
+
+        /* Specific fix for Plus / Pro Max iPhones */
+        @media (min-width: 401px) and (max-width: 440px) {
+          .card-line-1, .card-line-2 { font-size: 22px; }
+          .card-line-3 { font-size: 40px; }
+          .card-ampersand { font-size: 20px; }
+          .card-inner::before { inset: -10px -10px -10px -10px; }
         }
       `}</style>
 
