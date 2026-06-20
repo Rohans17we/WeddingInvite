@@ -350,50 +350,54 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
             position: absolute !important;
           }
           #paper {
-            x: 569.8px !important;
-            width: 308px !important;
+            x: 592.55px !important;
+            y: 416.7px !important;
+            width: 262.5px !important;
+            height: 396.75px !important;
           }
           .card-wrapper-safari {
-            left: 28%;
-            width: 44%;
+            left: 62.5vw;
+            top: 11svh;
+            width: 75vw;
+            height: 75svh;
           }
           .card-inner {
-            padding: 15px;
+            padding: 10px;
           }
           .card-inner::before {
-            inset: 0px 0px 0px 0px; /* Remove negative inset so flowers are 100% visible */
+            inset: 0px;
           }
           .card-content {
             width: 90%;
             height: 90%;
-            gap: 10px;
+            gap: 15px;
           }
-          .card-line-1, .card-line-2 { font-size: 22px; }
-          .card-line-3 { font-size: 38px; }
-          .card-ampersand { font-size: 20px; }
+          .card-line-1, .card-line-2 { font-size: 24px; }
+          .card-line-3 { font-size: 40px; }
+          .card-ampersand { font-size: 22px; }
         }
 
         /* Specific fix for iPhone Mini / SE */
         @media (max-width: 375px) {
+          .card-line-1, .card-line-2 { font-size: 16px; }
+          .card-line-3 { font-size: 28px; }
+          .card-ampersand { font-size: 14px; }
+          .card-inner::before { inset: 0px; }
+        }
+
+        /* Specific fix for standard iPhones (13, 14, 15, 16 Pro) */
+        @media (min-width: 376px) and (max-width: 400px) {
           .card-line-1, .card-line-2 { font-size: 18px; }
           .card-line-3 { font-size: 32px; }
           .card-ampersand { font-size: 16px; }
           .card-inner::before { inset: 0px; }
         }
 
-        /* Specific fix for standard iPhones (13, 14, 15, 16 Pro) */
-        @media (min-width: 376px) and (max-width: 400px) {
+        /* Specific fix for Plus / Pro Max iPhones */
+        @media (min-width: 401px) and (max-width: 440px) {
           .card-line-1, .card-line-2 { font-size: 20px; }
           .card-line-3 { font-size: 36px; }
           .card-ampersand { font-size: 18px; }
-          .card-inner::before { inset: 0px; }
-        }
-
-        /* Specific fix for Plus / Pro Max iPhones */
-        @media (min-width: 401px) and (max-width: 440px) {
-          .card-line-1, .card-line-2 { font-size: 22px; }
-          .card-line-3 { font-size: 40px; }
-          .card-ampersand { font-size: 20px; }
           .card-inner::before { inset: 0px; }
         }
       `}</style>
