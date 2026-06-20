@@ -28,12 +28,10 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
 
   // 1. Detect browser client-side
   useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
     const vendor = navigator.vendor.toLowerCase();
-    const isSafariBrowser =
-      vendor.includes("apple") &&
-      !userAgent.includes("crios") &&
-      !userAgent.includes("fxios");
+    // In iOS, all browsers (including Chrome/CriOS and Firefox/FxiOS) are forced to use WebKit.
+    // WebKit has the foreignObject bug. Thus, any browser with the Apple vendor string needs the fallback.
+    const isSafariBrowser = vendor.includes("apple");
     setIsSafari(isSafariBrowser);
   }, []);
 
