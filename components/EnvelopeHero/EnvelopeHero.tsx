@@ -345,23 +345,23 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         @media (max-width: 1024px) {
           .envelope-hero-svg-host > svg, .safari-layer-container {
             width: 200vw !important;
-            height: 97vh !important;
+            height: 97svh !important;
             left: -50vw !important;
             position: absolute !important;
           }
           #paper {
-            x: 555.8px !important;
-            width: 336px !important;
+            x: 569.8px !important;
+            width: 308px !important;
           }
           .card-wrapper-safari {
-            left: 26%;
-            width: 48%;
+            left: 28%;
+            width: 44%;
           }
           .card-inner {
             padding: 15px;
           }
           .card-inner::before {
-            inset: -10px -10px -10px -10px; /* Greatly reduce negative inset so flowers are visible */
+            inset: 0px 0px 0px 0px; /* Remove negative inset so flowers are 100% visible */
           }
           .card-content {
             width: 90%;
@@ -378,7 +378,7 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           .card-line-1, .card-line-2 { font-size: 18px; }
           .card-line-3 { font-size: 32px; }
           .card-ampersand { font-size: 16px; }
-          .card-inner::before { inset: -5px -5px -5px -5px; }
+          .card-inner::before { inset: 0px; }
         }
 
         /* Specific fix for standard iPhones (13, 14, 15, 16 Pro) */
@@ -386,7 +386,7 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           .card-line-1, .card-line-2 { font-size: 20px; }
           .card-line-3 { font-size: 36px; }
           .card-ampersand { font-size: 18px; }
-          .card-inner::before { inset: -8px -8px -8px -8px; }
+          .card-inner::before { inset: 0px; }
         }
 
         /* Specific fix for Plus / Pro Max iPhones */
@@ -394,7 +394,7 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           .card-line-1, .card-line-2 { font-size: 22px; }
           .card-line-3 { font-size: 40px; }
           .card-ampersand { font-size: 20px; }
-          .card-inner::before { inset: -10px -10px -10px -10px; }
+          .card-inner::before { inset: 0px; }
         }
       `}</style>
 
