@@ -10,26 +10,53 @@ interface Props {
 
 export default function EnvelopeHero({ onScrollToNext }: Props) {
   const [svgContent, setSvgContent] = useState<string>("");
+  const [isSafari, setIsSafari] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isOpenRef = useRef(false);
   const reverseIntentRef = useRef<"next" | "close">("close");
   const isTransitioningRef = useRef(false);
   const onScrollToNextRef = useRef(onScrollToNext);
+  
+  // Refs for Safari fallback layered approach
+  const svg1Ref = useRef<HTMLDivElement>(null);
+  const svg2Ref = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const cardMaskRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => { onScrollToNextRef.current = onScrollToNext; }, [onScrollToNext]);
 
-  // 1. Fetch the reference SVG at runtime — exactly as /envelope does, no modifications
+  // 1. Detect browser client-side
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const vendor = navigator.vendor.toLowerCase();
+    const isSafariBrowser =
+      vendor.includes("apple") &&
+      !userAgent.includes("crios") &&
+      !userAgent.includes("fxios");
+    setIsSafari(isSafariBrowser);
+  }, []);
+
+  // 2. Fetch the reference SVG at runtime and modify if Safari
   useEffect(() => {
     fetch("/envelope-reference.svg")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load SVG");
         return res.text();
       })
-      .then((text) => setSvgContent(text))
+      .then((text) => {
+        if (isSafari) {
+          // Safari workaround: strip foreignObject completely. We will render it as a sibling HTML element.
+          const stripped = text.replace(/<g mask="url\(#mask\)[\s\S]*?<foreignObject[\s\S]*?<\/foreignObject>\s*<\/g>/gi, "");
+          setSvgContent(stripped);
+        } else {
+          setSvgContent(text);
+        }
+      })
       .catch((err) => console.error("Error loading envelope SVG:", err));
-  }, []);
+  }, [isSafari]);
 
-  // 2. GSAP timeline — exact copy of /envelope/page.tsx
+  // 3. GSAP timeline
   useEffect(() => {
     if (!svgContent || !containerRef.current) return;
 
@@ -84,24 +111,47 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           transformOrigin: "center bottom",
           scaleY: 0,
           ease: "power1.inOut",
-        }, "-=1.0")
+        }, "-=1.0");
 
-        // 4. Paper card sliding out
-        .fromTo("#paper", { y: 350 }, { y: 0, duration: 1.8 }, "-=1.8")
-        .to("#paper-mask", { y: "+=500", duration: 2.2 })
-        .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<")
+      if (isSafari && cardRef.current && svg1Ref.current && svg2Ref.current && cardMaskRef.current) {
+        // --- SAFARI HTML LAYERED PATH ---
+        tl
+          // 4. Slide HTML card up
+          .fromTo(
+            cardRef.current,
+            { y: "68.2%" },
+            { y: "0%", duration: 1.8 },
+            "-=1.8"
+          )
+          // Expand the mask downwards exactly synchronously with the SVGs moving down
+          // to perfectly mimic the SVG mask sliding behavior
+          .to(cardMaskRef.current, { height: "156.77%", duration: 2.2 }, "<")
+          // Move the SVGs (envelope) down
+          .to([svg1Ref.current, svg2Ref.current], { y: "97.4%", duration: 2.3 }, "<")
+          // Snap mask fully open near the end to reveal corners, matching original
+          .to(cardMaskRef.current, { height: "200%", duration: 0.01 }, "-=0.8");
+      } else {
+        // --- CHROME/FIREFOX NATIVE SVG PATH ---
+        tl
+          // 4. Paper card sliding out
+          .fromTo("#paper", { y: 350 }, { y: 0, duration: 1.8 }, "-=1.8")
+          .to("#paper-mask", { y: "+=500", duration: 2.2 })
+          .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<");
+      }
 
-        // 5. Final inner shadow reveal
-        .to("#paper-mask-full", { autoAlpha: 1, duration: 0.01 }, "-=0.8")
-        .from("#shadows-inner", { autoAlpha: 0, y: "+=2", duration: 0.3 }, "-=0.2");
+      // 5. Final inner shadow reveal
+      if (!isSafari) {
+        tl.to("#paper-mask-full", { autoAlpha: 1, duration: 0.01 }, "-=0.8");
+      }
+      tl.from("#shadows-inner", { autoAlpha: 0, y: "+=2", duration: 0.3 }, "-=0.2");
 
       timelineRef.current = tl;
     }, containerRef);
 
     return () => ctx.revert();
-  }, [svgContent]);
+  }, [svgContent, isSafari]);
 
-  // 3. Scroll and swipe gesture detection
+  // 4. Scroll and swipe gesture detection
   useEffect(() => {
     let touchStartY = 0;
 
@@ -181,13 +231,34 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
       style={{ backgroundImage: "url('/textures/envelope-inside-page.png')" }}
       onClick={handleToggle}
     >
-      {/* Same styles as /envelope/page.tsx */}
       <style>{`
-        .envelope-hero-svg-host svg {
+        .safari-layer {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+        }
+
+        .safari-layer svg {
+          width: 100% !important;
+          height: 100% !important;
+          overflow: visible !important;
+        }
+
+        .envelope-hero-svg-host > svg {
           width: 97vw !important;
           height: 97vh !important;
           margin: 0 auto !important;
           overflow: visible !important;
+        }
+
+        .card-wrapper-safari {
+          position: absolute;
+          left: 0.43%;
+          top: -1.65%;
+          width: 99.02%;
+          height: 103.26%;
         }
 
         .card-wrapper {
@@ -274,7 +345,7 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
         }
 
         @media (max-width: 1024px) {
-          .envelope-hero-svg-host svg {
+          .envelope-hero-svg-host > svg, .safari-layer-container {
             width: 200vw !important;
             height: 97vh !important;
             left: -50vw !important;
@@ -283,6 +354,10 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           #paper {
             x: 535px !important;
             width: 377.5px !important;
+          }
+          .card-wrapper-safari {
+            left: 23%;
+            width: 53.9%;
           }
         }
       `}</style>
@@ -297,9 +372,78 @@ export default function EnvelopeHero({ onScrollToNext }: Props) {
           justifyContent: "center",
           alignItems: "center",
           cursor: "pointer",
+          position: "relative",
         }}
-        dangerouslySetInnerHTML={{ __html: svgContent }}
-      />
+      >
+        {isSafari ? (
+          <div className="safari-layer-container" style={{ position: "absolute", inset: 0 }}>
+            {/* SVG 1: Back Layer */}
+            <div 
+              ref={svg1Ref}
+              style={{ position: "absolute", inset: 0, zIndex: 1 }}
+              dangerouslySetInnerHTML={{ __html: svgContent }}
+            />
+
+            {/* HTML Card Layer (Masked to hide it when pushed down) */}
+            <div 
+              ref={cardMaskRef} 
+              style={{ 
+                position: "absolute", 
+                top: 0, 
+                left: 0, 
+                width: "100%", 
+                zIndex: 2, 
+                overflow: "hidden", 
+                height: "59.37%",
+                clipPath: "inset(0)",
+                transform: "translateZ(0)"
+              }}
+            >
+              <div ref={cardRef} className="card-wrapper-safari">
+                <div className="card-wrapper">
+                  <div className="card-inner">
+                    <div className="card-content">
+                      <div className="card-line-1">With Love</div>
+                      <div className="card-line-2">From</div>
+                      <div className="card-line-3">
+                        <span className="card-name">Ritik</span>
+                        <span className="card-ampersand">&amp;</span>
+                        <span className="card-name">Ameesha</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SVG 2: Front Layer (Clipped to only show the front pocket) */}
+            <div 
+              ref={svg2Ref}
+              style={{ 
+                position: "absolute", 
+                inset: 0,
+                zIndex: 3, 
+                pointerEvents: "none",
+                clipPath: "polygon(0% 0%, 4.54% 15.67%, 49.96% 59.37%, 95.37% 15.76%, 100% 0%, 100% 100%, 0% 100%)"
+              }}
+              dangerouslySetInnerHTML={{ __html: svgContent }}
+            />
+          </div>
+        ) : (
+          /* Chrome/Firefox Native SVG */
+          <div 
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1
+            }}
+            dangerouslySetInnerHTML={{ __html: svgContent }}
+          />
+        )}
+      </div>
     </section>
   );
 }

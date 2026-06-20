@@ -6,22 +6,25 @@ export default function EnvelopePlayground() {
   const [svgContent, setSvgContent] = useState<string>("");
   const [isSafari, setIsSafari] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const cardOverlayRef = useRef<HTMLDivElement>(null);
-  const cardWrapperRef = useRef<HTMLDivElement>(null);
+  
+  // Refs for the new layered approach
+  const svg1Ref = useRef<HTMLDivElement>(null);
+  const svg2Ref = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
-  // 1. Detect browser client-side to prevent Next.js hydration issues
+  // 1. Detect browser client-side
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const vendor = navigator.vendor.toLowerCase();
     const isSafariBrowser =
       vendor.includes("apple") &&
-      !userAgent.includes("crios") && // Exclude Chrome on iOS
-      !userAgent.includes("fxios");   // Exclude Firefox on iOS
+      !userAgent.includes("crios") &&
+      !userAgent.includes("fxios");
     setIsSafari(isSafariBrowser);
   }, []);
 
-  // 2. Fetch reference SVG and strip <foreignObject> if Safari is detected
+  // 2. Fetch and modify SVG
   useEffect(() => {
     fetch("/envelope-reference.svg")
       .then((res) => {
@@ -30,8 +33,8 @@ export default function EnvelopePlayground() {
       })
       .then((text) => {
         if (isSafari) {
-          // Safari workaround: strip out foreignObject completely to prevent it rendering at viewport (0,0)
-          const stripped = text.replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "");
+          // Safari workaround: strip foreignObject completely. We will render it as a sibling HTML element.
+          const stripped = text.replace(/<g mask="url\(#mask\)[\s\S]*?<foreignObject[\s\S]*?<\/foreignObject>\s*<\/g>/gi, "");
           setSvgContent(stripped);
         } else {
           setSvgContent(text);
@@ -40,23 +43,13 @@ export default function EnvelopePlayground() {
       .catch((err) => console.error("Error loading envelope SVG:", err));
   }, [isSafari]);
 
-  // 3. Set up the GSAP timeline once the SVG content is loaded
+  // 3. GSAP Timeline
   useEffect(() => {
     if (!svgContent || !containerRef.current) return;
 
-    // Run GSAP within a clean react context
     const ctx = gsap.context(() => {
       // Configure initial states
       gsap.set("#paper-mask-full", { autoAlpha: 0 });
-
-      // CSS clip-path representing the V-shaped mouth of the envelope opening
-      const openingClip = "polygon(50% 59.4%, 95.4% 15.8%, 99% 0%, 1% 0%, 4.6% 15.7%)";
-
-      // Set initial state for Safari fallback components
-      if (isSafari && cardOverlayRef.current && cardWrapperRef.current) {
-        gsap.set(cardOverlayRef.current, { clipPath: openingClip });
-        gsap.set(cardWrapperRef.current, { y: "68.2%" });
-      }
 
       // Continuous bouncing arrow animation
       gsap.to("#arrow", {
@@ -67,7 +60,6 @@ export default function EnvelopePlayground() {
         ease: "power1.inOut"
       });
 
-      // Create timeline
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power2.inOut" },
@@ -80,7 +72,7 @@ export default function EnvelopePlayground() {
         .to("#button", { autoAlpha: 0, scale: 0, transformOrigin: "center center", duration: 0.3 }, "<")
         .to("#text > *", { autoAlpha: 0, stagger: 0.05, duration: 0.3 }, "<")
 
-        // 2. Envelope top flap opening (scaleY flipped upside down)
+        // 2. Envelope top flap opening
         .to("#closed", {
           duration: 1.5,
           transformOrigin: "center top",
@@ -101,23 +93,22 @@ export default function EnvelopePlayground() {
           "-=1.0"
         );
 
-      if (isSafari && cardOverlayRef.current && cardWrapperRef.current) {
-        // --- SAFARI FALLBACK ANIMATION PATH ---
+      if (isSafari && cardRef.current && svg1Ref.current && svg2Ref.current) {
+        // --- SAFARI HTML LAYERED PATH ---
         tl
-          // 4. Slide HTML card wrapper up from 68.2% to 0% (mirrors paper y: 350 to 0)
+          // 4. Slide HTML card up (68.2% corresponds to y=350 in viewBox 513)
           .fromTo(
-            cardWrapperRef.current,
+            cardRef.current,
             { y: "68.2%" },
             { y: "0%", duration: 1.8 },
             "-=1.8"
           )
-          // 5. Slide envelope down while snapping card clip-path to 'none' 0.8s before the end
-          .to("#envelope-interactive", { y: 500, duration: 2.3 })
-          .to(cardOverlayRef.current, { clipPath: "none", duration: 0.01 }, "-=0.8");
+          // Move the SVGs (envelope) down (97.4% corresponds to y=500 in viewBox 513)
+          .to([svg1Ref.current, svg2Ref.current], { y: "97.4%", duration: 2.3 }, "<");
+
       } else {
-        // --- CHROME/FIREFOX ORIGINAL PATH ---
+        // --- CHROME/FIREFOX NATIVE SVG PATH ---
         tl
-          // 4. Paper card sliding out inside SVG
           .fromTo(
             "#paper",
             { y: 350 },
@@ -128,9 +119,11 @@ export default function EnvelopePlayground() {
           .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<");
       }
 
-      // 6. Final inner shadow reveal
-      tl.to("#paper-mask-full", { autoAlpha: 1, duration: 0.01 }, "-=0.8")
-        .from("#shadows-inner", { autoAlpha: 0, y: "+=2", duration: 0.3 }, "-=0.2");
+      // 5. Final inner shadow reveal
+      if (!isSafari) {
+        tl.to("#paper-mask-full", { autoAlpha: 1, duration: 0.01 }, "-=0.8");
+      }
+      tl.from("#shadows-inner", { autoAlpha: 0, y: "+=2", duration: 0.3 }, "-=0.2");
 
       timelineRef.current = tl;
     }, containerRef);
@@ -138,19 +131,15 @@ export default function EnvelopePlayground() {
     return () => ctx.revert();
   }, [svgContent, isSafari]);
 
-  // 4. Scroll and swipe gesture detection to open/close the envelope
+  // 4. Scroll and swipe gesture detection
   useEffect(() => {
     let touchStartY = 0;
 
     const handleWheel = (e: WheelEvent) => {
       const tl = timelineRef.current;
       if (!tl) return;
-
-      if (e.deltaY > 10) {
-        tl.play();
-      } else if (e.deltaY < -10) {
-        tl.reverse();
-      }
+      if (e.deltaY > 10) tl.play();
+      else if (e.deltaY < -10) tl.reverse();
     };
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -160,15 +149,10 @@ export default function EnvelopePlayground() {
     const handleTouchMove = (e: TouchEvent) => {
       const tl = timelineRef.current;
       if (!tl) return;
-
       const touchEndY = e.touches[0].clientY;
-      const diffY = touchStartY - touchEndY; // positive = swipe up / scroll down
-
-      if (diffY > 30) {
-        tl.play();
-      } else if (diffY < -30) {
-        tl.reverse();
-      }
+      const diffY = touchStartY - touchEndY;
+      if (diffY > 30) tl.play();
+      else if (diffY < -30) tl.reverse();
     };
 
     window.addEventListener("wheel", handleWheel, { passive: true });
@@ -182,16 +166,11 @@ export default function EnvelopePlayground() {
     };
   }, []);
 
-  // Click handler to toggle envelope state
   const handleToggle = () => {
     const tl = timelineRef.current;
     if (!tl) return;
-
-    if (tl.progress() === 0 || tl.reversed()) {
-      tl.play();
-    } else if (tl.progress() === 1 || !tl.reversed()) {
-      tl.reverse();
-    }
+    if (tl.progress() === 0 || tl.reversed()) tl.play();
+    else if (tl.progress() === 1 || !tl.reversed()) tl.reverse();
   };
 
   return (
@@ -207,7 +186,6 @@ export default function EnvelopePlayground() {
       position: "relative",
       overflow: "hidden"
     }}>
-      {/* Dynamic styles mapping SVG coordinate percentage coordinates */}
       <style>{`
         .envelope-wrapper {
           position: relative;
@@ -217,14 +195,11 @@ export default function EnvelopePlayground() {
           justify-content: center;
           align-items: center;
         }
-
         .envelope-wrapper svg {
           width: 100% !important;
           height: 100% !important;
           overflow: visible !important;
         }
-
-        /* Responsive scaling matching the SVG dimensions on mobile/tablet */
         @media (max-width: 1024px) {
           .envelope-wrapper {
             width: 200vw;
@@ -233,43 +208,19 @@ export default function EnvelopePlayground() {
             position: absolute;
           }
         }
-
-        /* HTML Overlay styling for Safari fallback */
-        .card-overlay {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          left: 0;
-          top: 0;
-          z-index: 2;
-          pointer-events: none;
-          clip-path: polygon(50% 59.4%, 95.4% 15.8%, 99% 0%, 1% 0%, 4.6% 15.7%);
-        }
-
-        /* Converted bounds of SVG <foreignObject id="paper"> to percentages */
         .card-wrapper-safari {
           position: absolute;
-          left: 0.46%;
-          width: 99%;
+          left: 0.43%;
           top: -1.65%;
-          height: 103.25%;
-          transform: translateY(68.2%);
+          width: 99.02%;
+          height: 103.26%;
         }
-
-        @media (max-width: 1024px) {
-          .card-wrapper-safari {
-            left: 23%;
-            width: 53.9%;
-          }
-        }
-
         .card-wrapper {
           position: absolute;
           inset: 40px;
           padding: 0;
           filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.45));
         }
-
         .card-inner {
           position: absolute;
           inset: 0;
@@ -285,7 +236,6 @@ export default function EnvelopePlayground() {
           clip-path: inset(0 round 8px);
           padding: 20px;
         }
-
         .card-inner::before {
           content: '';
           position: absolute;
@@ -296,7 +246,6 @@ export default function EnvelopePlayground() {
           pointer-events: none;
           z-index: 2;
         }
-
         .card-content {
           width: 85%;
           height: 85%;
@@ -309,7 +258,6 @@ export default function EnvelopePlayground() {
           z-index: 10;
           box-sizing: border-box;
         }
-
         .card-line-1, .card-line-2 {
           font-family: "Pinyon Script", "above-the-sky-script", cursive, serif;
           font-size: 28px;
@@ -320,7 +268,6 @@ export default function EnvelopePlayground() {
           letter-spacing: 0.05em;
           line-height: 1.1;
         }
-
         .card-line-3 {
           font-family: "Pinyon Script", "above-the-sky-script", cursive, serif;
           font-size: 54px;
@@ -335,11 +282,7 @@ export default function EnvelopePlayground() {
           justify-content: center;
           flex-wrap: wrap;
         }
-
-        .card-name {
-          display: inline-block;
-        }
-
+        .card-name { display: inline-block; }
         .card-ampersand {
           font-size: 24px;
           margin: 0 8px;
@@ -349,27 +292,19 @@ export default function EnvelopePlayground() {
         }
       `}</style>
 
-      <div className="envelope-wrapper">
-        {/* SVG Container (Clicking it also toggles the animation) */}
-        <div 
-          ref={containerRef}
-          onClick={handleToggle}
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "pointer",
-            zIndex: 1
-          }}
-          dangerouslySetInnerHTML={{ __html: svgContent }}
-        />
+      <div ref={containerRef} className="envelope-wrapper" onClick={handleToggle} style={{ cursor: "pointer" }}>
+        
+        {isSafari ? (
+          <>
+            {/* SVG 1: Back Layer */}
+            <div 
+              ref={svg1Ref}
+              style={{ position: "absolute", inset: 0, zIndex: 1 }}
+              dangerouslySetInnerHTML={{ __html: svgContent }}
+            />
 
-        {/* HTML Card Overlay (Active only on Safari fallback) */}
-        {isSafari && (
-          <div ref={cardOverlayRef} className="card-overlay">
-            <div ref={cardWrapperRef} className="card-wrapper-safari">
+            {/* HTML Card Layer */}
+            <div ref={cardRef} className="card-wrapper-safari" style={{ zIndex: 2 }}>
               <div className="card-wrapper">
                 <div className="card-inner">
                   <div className="card-content">
@@ -384,7 +319,33 @@ export default function EnvelopePlayground() {
                 </div>
               </div>
             </div>
-          </div>
+
+            {/* SVG 2: Front Layer (Clipped to only show the front pocket) */}
+            <div 
+              ref={svg2Ref}
+              style={{ 
+                position: "absolute", 
+                inset: 0, 
+                zIndex: 3, 
+                pointerEvents: "none",
+                clipPath: "polygon(0% 0%, 4.54% 15.67%, 49.96% 59.37%, 95.37% 15.76%, 100% 0%, 100% 100%, 0% 100%)"
+              }}
+              dangerouslySetInnerHTML={{ __html: svgContent }}
+            />
+          </>
+        ) : (
+          /* Chrome/Firefox Native SVG */
+          <div 
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1
+            }}
+            dangerouslySetInnerHTML={{ __html: svgContent }}
+          />
         )}
       </div>
     </main>
