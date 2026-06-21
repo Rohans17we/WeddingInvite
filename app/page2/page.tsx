@@ -47,7 +47,7 @@ export default function Page2() {
         }
 
         .foreground-arch {
-          width: 90%;
+          width: 41%;
           height: 100%;
           position: absolute;
           left: 50%;
@@ -65,7 +65,7 @@ export default function Page2() {
             transform: translate(85%, -50%);
           }
           .foreground-arch {
-            object-fit: fill;
+            width: 90%;
           }
         }
       `}</style>
