@@ -21,7 +21,7 @@ export default function Page2() {
         .flower-wrapper {
           position: absolute;
           top: 50%;
-          z-index: 1;
+          z-index: 2;
           aspect-ratio: 1/1;
           height: 100vh;
         }
@@ -56,8 +56,19 @@ export default function Page2() {
           object-fit: fill;
         }
 
+
+        /* Tablet specific adjustments */
+        @media (max-width: 1024px) {
+          .foreground-arch {
+            width: 80%;
+          }
+        }
+
         /* Mobile specific adjustments */
         @media (max-width: 768px) {
+          .flower-wrapper {
+            height: 100vh;
+          }
           .flower-wrapper.left {
             transform: translate(-85%, -50%);
           }
@@ -94,6 +105,7 @@ export default function Page2() {
         alt="Page 2 Foreground"
         className="foreground-arch"
       />
+
     </main>
   );
 }
