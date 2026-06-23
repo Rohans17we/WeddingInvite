@@ -35,6 +35,28 @@ export default function Page2() {
           to { transform: scaleX(-1) rotateY(360deg); }
         }
 
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeInUpCentered {
+          from {
+            opacity: 0;
+            transform: translate(-50%, 20px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+
 
         .flower-wrapper {
           position: absolute;
@@ -81,6 +103,8 @@ export default function Page2() {
           transform: translateX(-50%);
           width: 12vh;
           z-index: 4;
+          opacity: 0;
+          animation: fadeInUpCentered 1s ease-out 0.2s forwards;
         }
 
         .ganesh-text {
@@ -93,6 +117,8 @@ export default function Page2() {
           font-size: 2rem;
           z-index: 4;
           white-space: nowrap;
+          opacity: 0;
+          animation: fadeInUpCentered 1s ease-out 0.4s forwards;
         }
 
         .invite-content {
@@ -114,6 +140,8 @@ export default function Page2() {
           font-size: 2rem;
           color: #e0e0e0;
           margin-bottom: 0.5vh;
+          opacity: 0;
+          animation: fadeInUp 1s ease-out 0.6s forwards;
         }
 
         .couple-section {
@@ -129,6 +157,15 @@ export default function Page2() {
           flex-direction: column;
           align-items: center;
           gap: 0.5vh;
+          opacity: 0;
+        }
+
+        .person:first-child {
+          animation: fadeInUp 1s ease-out 0.8s forwards;
+        }
+
+        .person:last-child {
+          animation: fadeInUp 1s ease-out 1.2s forwards;
         }
 
         .person-name {
@@ -151,10 +188,18 @@ export default function Page2() {
           line-height: 1.4;
         }
 
+        @keyframes subtlePulse {
+          0% { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2)); transform: scale(1); }
+          50% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6)); transform: scale(1.03); }
+          100% { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2)); transform: scale(1); }
+        }
+
         .ampersand {
           font-family: var(--font-script);
           font-size: 3.5rem;
           line-height: 1;
+          opacity: 0;
+          animation: fadeInUp 1s ease-out 1.0s forwards, subtlePulse 3s ease-in-out 2.0s infinite;
         }
 
         .gold-text-gradient {
@@ -162,6 +207,11 @@ export default function Page2() {
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+          display: inline-block;
+        }
+        
+        .person-name.gold-text-gradient {
+           animation: subtlePulse 4s ease-in-out 2.2s infinite;
         }
 
         .outro-text {
@@ -172,6 +222,8 @@ export default function Page2() {
           text-transform: uppercase;
           line-height: 1.6;
           margin-top: 1vh;
+          opacity: 0;
+          animation: fadeInUp 1s ease-out 1.5s forwards;
         }
 
 
@@ -240,6 +292,32 @@ export default function Page2() {
           z-index: 3;
           opacity: 0.5;
           transform: scaleX(-1);
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        .flowers-bottom-spread {
+          position: absolute;
+          bottom: -2vh;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100vw;
+          min-width: 100%;
+          object-fit: cover;
+          object-position: center;
+          z-index: 2;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        .flowers-top-spread {
+          position: absolute;
+          top: -10vh;
+          left: 50%;
+          transform: translateX(-50%) scaleY(-1);
+          width: 100vw;
+          min-width: 100%;
+          object-fit: cover;
+          object-position: center;
+          z-index: 2;
           filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
         }
 
@@ -437,6 +515,20 @@ export default function Page2() {
         src="/Page 2/FlowersBottom.svg" 
         alt="Flowers Bottom Right" 
         className="flowers-bottom-right" 
+      />
+
+      {/* Spread Bottom Flowers (Behind Arch) */}
+      <img 
+        src="/Page 2/FlowersBottom2.svg" 
+        alt="Flowers Spread Bottom" 
+        className="flowers-bottom-spread" 
+      />
+
+      {/* Spread Top Flowers (Behind Arch) */}
+      <img 
+        src="/Page 2/FlowersBottom2.svg" 
+        alt="Flowers Spread Top" 
+        className="flowers-top-spread" 
       />
 
     </main>
