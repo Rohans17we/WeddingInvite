@@ -377,12 +377,12 @@ export default function Page2Content() {
             font-size: 1.4rem;
           }
           .invite-content {
-            top: 22vh;
+            top: 18vh;
             width: 85vw;
-            gap: 3vh;
+            gap: 2vh;
           }
           .couple-section {
-            gap: 3vh;
+            gap: 2vh;
           }
           .intro-text {
             font-size: 1.8rem;
@@ -402,7 +402,7 @@ export default function Page2Content() {
           .outro-text {
             font-size: 0.9rem;
             letter-spacing: 1.5px;
-            margin-top: 4vh;
+            margin-top: 1.5vh;
           }
           .lantern-wrapper {
             width: 32vw;
@@ -419,7 +419,7 @@ export default function Page2Content() {
             width: 50vw;
           }
           .flowers-bottom-spread, .flowers-top-spread {
-            height: 40vh;
+            height: 60vh;
           }
         }
       `}</style>
