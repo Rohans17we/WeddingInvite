@@ -418,6 +418,9 @@ export default function Page2Content() {
             right: 5vw;
             width: 50vw;
           }
+          .flowers-bottom-spread, .flowers-top-spread {
+            height: 20vh;
+          }
         }
       `}</style>
 
