@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
+import Page2Content from "../../components/Page2Content";
 
 export default function EnvelopePlayground() {
   const [svgContent, setSvgContent] = useState<string>("");
   const [isSafari, setIsSafari] = useState<boolean>(false);
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Refs for the new layered approach
@@ -63,12 +65,14 @@ export default function EnvelopePlayground() {
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power2.inOut" },
+        onComplete: () => setIsUnlocked(true),
+        onReverseComplete: () => setIsUnlocked(false)
       });
 
       // Sequence
       tl
         // 1. Hide interactive elements
-        .to("#arrow", { autoAlpha: 0, duration: 0.3 })
+        .to("#arrow", { autoAlpha: 0, duration: 0.3, overwrite: "auto" })
         .to("#button", { autoAlpha: 0, scale: 0, transformOrigin: "center center", duration: 0.3 }, "<")
         .to("#text > *", { autoAlpha: 0, stagger: 0.05, duration: 0.3 }, "<")
 
@@ -116,7 +120,11 @@ export default function EnvelopePlayground() {
             "-=1.8"
           )
           .to("#paper-mask", { y: "+=500", duration: 2.2 })
-          .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<");
+          // Move the envelope body AND the interactive elements down together individually
+          .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<")
+          .to("#button", { y: 500, duration: 2.3 }, "<")
+          .to("#arrow", { y: 500, duration: 2.3 }, "<")
+          .to("#text > *", { y: 500, duration: 2.3 }, "<");
       }
 
       // 5. Final inner shadow reveal
@@ -138,8 +146,16 @@ export default function EnvelopePlayground() {
     const handleWheel = (e: WheelEvent) => {
       const tl = timelineRef.current;
       if (!tl) return;
-      if (e.deltaY > 10) tl.play();
-      else if (e.deltaY < -10) tl.reverse();
+      
+      const container = document.querySelector('.snapContainer');
+      const isAtTop = container ? container.scrollTop === 0 : true;
+
+      if (e.deltaY > 10 && isAtTop && tl.progress() === 0) {
+        tl.play();
+      } else if (e.deltaY < -10 && isAtTop && tl.progress() > 0) {
+        setIsUnlocked(false);
+        tl.reverse();
+      }
     };
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -149,10 +165,19 @@ export default function EnvelopePlayground() {
     const handleTouchMove = (e: TouchEvent) => {
       const tl = timelineRef.current;
       if (!tl) return;
+      
+      const container = document.querySelector('.snapContainer');
+      const isAtTop = container ? container.scrollTop === 0 : true;
+
       const touchEndY = e.touches[0].clientY;
       const diffY = touchStartY - touchEndY;
-      if (diffY > 30) tl.play();
-      else if (diffY < -30) tl.reverse();
+      
+      if (diffY > 30 && isAtTop && tl.progress() === 0) {
+        tl.play();
+      } else if (diffY < -30 && isAtTop && tl.progress() > 0) {
+        setIsUnlocked(false);
+        tl.reverse();
+      }
     };
 
     window.addEventListener("wheel", handleWheel, { passive: true });
@@ -174,18 +199,19 @@ export default function EnvelopePlayground() {
   };
 
   return (
-    <main style={{ 
-      height: "100vh", 
+    <main className={`snapContainer ${isUnlocked ? 'unlocked' : ''}`} style={{ 
       width: "100vw", 
-      backgroundImage: "url('/textures/envelope-inside-page.png')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      display: "flex", 
-      justifyContent: "center", 
-      alignItems: "center", 
-      position: "relative",
-      overflow: "hidden"
+      position: "relative"
     }}>
+      <section className="snapSection envelopeSection" style={{
+        backgroundImage: "url('/textures/envelope-inside-page.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        position: "relative",
+      }}>
       <style>{`
         .envelope-wrapper {
           position: relative;
@@ -348,6 +374,9 @@ export default function EnvelopePlayground() {
           />
         )}
       </div>
+      </section>
+
+      <Page2Content />
     </main>
   );
 }
