@@ -25,6 +25,16 @@ export default function Page2() {
           to { transform: rotate(360deg); }
         }
 
+        @keyframes rotateAxis {
+          from { transform: rotateY(0deg); }
+          to { transform: rotateY(360deg); }
+        }
+
+        @keyframes rotateAxisRight {
+          from { transform: scaleX(-1) rotateY(0deg); }
+          to { transform: scaleX(-1) rotateY(360deg); }
+        }
+
 
         .flower-wrapper {
           position: absolute;
@@ -184,10 +194,53 @@ export default function Page2() {
           transform: scaleX(-1);
         }
 
+        .desktop-lantern {
+          position: absolute;
+          z-index: 5;
+        }
+
+        .desktop-lantern.left-1 { left: 2vw; top: -2vh; width: 12vw; }
+        .desktop-lantern.left-2 { left: 10vw; top: -8vh; width: 9vw; }
+
+        .desktop-lantern.right-1 { right: 2vw; top: -2vh; width: 12vw; }
+        .desktop-lantern.right-2 { right: 10vw; top: -8vh; width: 9vw; }
+
+        .desktop-lantern.right-1 .lantern-img,
+        .desktop-lantern.right-2 .lantern-img {
+          transform: scaleX(-1);
+        }
+
+        
+
         .lantern-img {
           width: 100%;
           height: auto;
           filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .desktop-lantern .lantern-img {
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)) drop-shadow(0 0 40px rgba(200, 80, 255, 0.9));
+        }
+
+        .flowers-bottom-left {
+          position: absolute;
+          bottom: -6vh;
+          left: 29.5vw;
+          width: 25vw;
+          z-index: 3;
+          opacity: 0.5;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        .flowers-bottom-right {
+          position: absolute;
+          bottom: -6vh;
+          right: 29.5vw;
+          width: 25vw;
+          z-index: 3;
+          opacity: 0.5;
+          transform: scaleX(-1);
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
         }
 
         /* Tablet specific adjustments */
@@ -212,6 +265,15 @@ export default function Page2() {
           }
           .lantern-wrapper.left { left: -5vw; }
           .lantern-wrapper.right { right: -5vw; }
+          .desktop-lantern { display: none; }
+          .flowers-bottom-left {
+            left: 10vw;
+            width: 35vw;
+          }
+          .flowers-bottom-right {
+            right: 10vw;
+            width: 35vw;
+          }
         }
 
         /* Mobile specific adjustments */
@@ -270,6 +332,14 @@ export default function Page2() {
           }
           .lantern-wrapper.left { left: -12vw; }
           .lantern-wrapper.right { right: -12vw; }
+          .flowers-bottom-left {
+            left: 5vw;
+            width: 50vw;
+          }
+          .flowers-bottom-right {
+            right: 5vw;
+            width: 50vw;
+          }
         }
       `}</style>
 
@@ -333,13 +403,41 @@ export default function Page2() {
       </div>
 
 
-      {/* Decorative Lanterns */}
+      {/* Decorative Lanterns (Mobile/Tablet) */}
       <div className="lantern-wrapper left">
         <img src="/Page 2/ElementLanterns.svg" alt="Lantern Left" className="lantern-img" />
       </div>
       <div className="lantern-wrapper right">
         <img src="/Page 2/ElementLanterns.svg" alt="Lantern Right" className="lantern-img" />
       </div>
+
+      {/* Desktop Lanterns (Lantern2.svg) */}
+      <div className="desktop-lantern left-1">
+        <img src="/Page 2/Lantern2.svg" alt="Lantern" className="lantern-img" />
+      </div>
+      <div className="desktop-lantern left-2">
+        <img src="/Page 2/Lantern2.svg" alt="Lantern" className="lantern-img" />
+      </div>
+      <div className="desktop-lantern right-1">
+        <img src="/Page 2/Lantern2.svg" alt="Lantern" className="lantern-img" />
+      </div>
+      <div className="desktop-lantern right-2">
+        <img src="/Page 2/Lantern2.svg" alt="Lantern" className="lantern-img" />
+      </div>
+
+      {/* Bottom Left Flowers */}
+      <img 
+        src="/Page 2/FlowersBottom.svg" 
+        alt="Flowers Bottom Left" 
+        className="flowers-bottom-left" 
+      />
+
+      {/* Bottom Right Flowers */}
+      <img 
+        src="/Page 2/FlowersBottom.svg" 
+        alt="Flowers Bottom Right" 
+        className="flowers-bottom-right" 
+      />
 
     </main>
   );
