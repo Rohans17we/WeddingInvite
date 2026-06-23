@@ -7,7 +7,8 @@ export default function Page2Content() {
   const { page2 } = inviteConfig;
 
   return (
-    <section className="snapSection" style={{
+    <section id="section2" className="snapSection" style={{
+      height: "100vh",
       width: "100vw",
       display: "flex",
       justifyContent: "center",
@@ -15,6 +16,8 @@ export default function Page2Content() {
       backgroundImage: "url('/textures/invite-bg.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
+      position: "relative",
+      overflow: "hidden",
     }}>
       <style>{`
         @keyframes spin {

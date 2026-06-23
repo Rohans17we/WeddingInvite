@@ -177,7 +177,7 @@ export default function EnvelopePlayground() {
     <main style={{ 
       height: "100vh", 
       width: "100vw", 
-      backgroundImage: "url('/textures/envelope-inside-page.png')",
+      backgroundImage: "url('/textures/invite-bg.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       display: "flex", 

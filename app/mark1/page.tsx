@@ -5,28 +5,26 @@ import Page2Content from "../../components/Page2Content";
 
 export default function EnvelopePlayground() {
   const [svgContent, setSvgContent] = useState<string>("");
-  const [isSafari, setIsSafari] = useState<boolean>(false);
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+  const mainRef = useRef<HTMLElement>(null);
+
   // Refs for the new layered approach
   const svg1Ref = useRef<HTMLDivElement>(null);
   const svg2Ref = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
-  // 1. Detect browser client-side
-  useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    const vendor = navigator.vendor.toLowerCase();
-    const isSafariBrowser =
-      vendor.includes("apple") &&
-      !userAgent.includes("crios") &&
-      !userAgent.includes("fxios");
-    setIsSafari(isSafariBrowser);
-  }, []);
+  // State and Refs for scroll locking
+  const isUnlockedRef = useRef(false);
+  const isAtTopRef = useRef(true);
+  const [isUnlocked, _setIsUnlocked] = useState(false);
+  
+  const setIsUnlocked = (val: boolean) => {
+    isUnlockedRef.current = val;
+    _setIsUnlocked(val);
+  };
 
-  // 2. Fetch and modify SVG
+  // 1. Fetch and modify SVG
   useEffect(() => {
     fetch("/envelope-reference.svg")
       .then((res) => {
@@ -34,18 +32,14 @@ export default function EnvelopePlayground() {
         return res.text();
       })
       .then((text) => {
-        if (isSafari) {
-          // Safari workaround: strip foreignObject completely. We will render it as a sibling HTML element.
-          const stripped = text.replace(/<g mask="url\(#mask\)[\s\S]*?<foreignObject[\s\S]*?<\/foreignObject>\s*<\/g>/gi, "");
-          setSvgContent(stripped);
-        } else {
-          setSvgContent(text);
-        }
+        // Strip foreignObject to use robust HTML layering across ALL browsers
+        const stripped = text.replace(/<g mask="url\(#mask\)[\s\S]*?<foreignObject[\s\S]*?<\/foreignObject>\s*<\/g>/gi, "");
+        setSvgContent(stripped);
       })
       .catch((err) => console.error("Error loading envelope SVG:", err));
-  }, [isSafari]);
+  }, []);
 
-  // 3. GSAP Timeline
+  // 2. GSAP Timeline
   useEffect(() => {
     if (!svgContent || !containerRef.current) return;
 
@@ -72,7 +66,7 @@ export default function EnvelopePlayground() {
       // Sequence
       tl
         // 1. Hide interactive elements
-        .to("#arrow", { autoAlpha: 0, duration: 0.3, overwrite: "auto" })
+        .to("#arrow", { autoAlpha: 0, duration: 0.3 })
         .to("#button", { autoAlpha: 0, scale: 0, transformOrigin: "center center", duration: 0.3 }, "<")
         .to("#text > *", { autoAlpha: 0, stagger: 0.05, duration: 0.3 }, "<")
 
@@ -97,49 +91,32 @@ export default function EnvelopePlayground() {
           "-=1.0"
         );
 
-      if (isSafari && cardRef.current && svg1Ref.current && svg2Ref.current) {
-        // --- SAFARI HTML LAYERED PATH ---
+      if (cardRef.current && svg1Ref.current && svg2Ref.current) {
+        // --- UNIFIED HTML LAYERED PATH ---
         tl
-          // 4. Slide HTML card up (68.2% corresponds to y=350 in viewBox 513)
+          // 4. Slide HTML card up
           .fromTo(
             cardRef.current,
             { y: "68.2%" },
             { y: "0%", duration: 1.8 },
             "-=1.8"
           )
-          // Move the SVGs (envelope) down (97.4% corresponds to y=500 in viewBox 513)
-          .to([svg1Ref.current, svg2Ref.current], { y: "97.4%", duration: 2.3 }, "<");
-
-      } else {
-        // --- CHROME/FIREFOX NATIVE SVG PATH ---
-        tl
-          .fromTo(
-            "#paper",
-            { y: 350 },
-            { y: 0, duration: 1.8 },
-            "-=1.8"
-          )
-          .to("#paper-mask", { y: "+=500", duration: 2.2 })
-          // Move the envelope body AND the interactive elements down together individually
-          .to("#envelope-interactive", { y: 500, duration: 2.3 }, "<")
-          .to("#button", { y: 500, duration: 2.3 }, "<")
-          .to("#arrow", { y: 500, duration: 2.3 }, "<")
-          .to("#text > *", { y: 500, duration: 2.3 }, "<");
+          // Move the SVGs (envelope) down
+          .to([svg1Ref.current, svg2Ref.current], { y: "97.4%", duration: 2.3 }, "<")
+          // 5. Push the front pocket envelope Z-index to the extreme back so it doesn't overlap the card
+          .set(svg2Ref.current, { zIndex: 1 });
       }
 
-      // 5. Final inner shadow reveal
-      if (!isSafari) {
-        tl.to("#paper-mask-full", { autoAlpha: 1, duration: 0.01 }, "-=0.8");
-      }
+      // 6. Final inner shadow reveal
       tl.from("#shadows-inner", { autoAlpha: 0, y: "+=2", duration: 0.3 }, "-=0.2");
 
       timelineRef.current = tl;
     }, containerRef);
 
     return () => ctx.revert();
-  }, [svgContent, isSafari]);
+  }, [svgContent]);
 
-  // 4. Scroll and swipe gesture detection
+  // 3. Scroll and swipe gesture detection
   useEffect(() => {
     let touchStartY = 0;
 
@@ -147,12 +124,15 @@ export default function EnvelopePlayground() {
       const tl = timelineRef.current;
       if (!tl) return;
       
-      const container = document.querySelector('.snapContainer');
-      const isAtTop = container ? container.scrollTop === 0 : true;
+      const isUnlockedLocal = isUnlockedRef.current;
+      const isAtTopLocal = isAtTopRef.current;
 
-      if (e.deltaY > 10 && isAtTop && tl.progress() === 0) {
+      // If we are unlocked and NOT at the top, let natural scrolling happen!
+      if (isUnlockedLocal && !isAtTopLocal) return;
+
+      if (e.deltaY > 10 && isAtTopLocal && tl.progress() === 0) {
         tl.play();
-      } else if (e.deltaY < -10 && isAtTop && tl.progress() > 0) {
+      } else if (e.deltaY < -10 && isAtTopLocal && tl.progress() === 1) {
         setIsUnlocked(false);
         tl.reverse();
       }
@@ -166,15 +146,17 @@ export default function EnvelopePlayground() {
       const tl = timelineRef.current;
       if (!tl) return;
       
-      const container = document.querySelector('.snapContainer');
-      const isAtTop = container ? container.scrollTop === 0 : true;
+      const isUnlockedLocal = isUnlockedRef.current;
+      const isAtTopLocal = isAtTopRef.current;
+
+      if (isUnlockedLocal && !isAtTopLocal) return;
 
       const touchEndY = e.touches[0].clientY;
       const diffY = touchStartY - touchEndY;
       
-      if (diffY > 30 && isAtTop && tl.progress() === 0) {
+      if (diffY > 30 && isAtTopLocal && tl.progress() === 0) {
         tl.play();
-      } else if (diffY < -30 && isAtTop && tl.progress() > 0) {
+      } else if (diffY < -30 && isAtTopLocal && tl.progress() === 1) {
         setIsUnlocked(false);
         tl.reverse();
       }
@@ -191,26 +173,51 @@ export default function EnvelopePlayground() {
     };
   }, []);
 
+  // 4. Track scroll position for locking/unlocking logic using the snapContainer
+  useEffect(() => {
+    const mainEl = mainRef.current;
+    if (!mainEl) return;
+
+    const handleScroll = () => {
+      isAtTopRef.current = mainEl.scrollTop < 10;
+    };
+    mainEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => mainEl.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // (Removed manual document.body.style.overflow logic as it is now handled by .snapContainer classes)
+
   const handleToggle = () => {
     const tl = timelineRef.current;
     if (!tl) return;
-    if (tl.progress() === 0 || tl.reversed()) tl.play();
-    else if (tl.progress() === 1 || !tl.reversed()) tl.reverse();
+    if (tl.progress() === 0 || tl.reversed()) {
+      tl.play();
+    } else if (tl.progress() === 1 || !tl.reversed()) {
+      setIsUnlocked(false);
+      tl.reverse();
+    }
   };
 
   return (
-    <main className={`snapContainer ${isUnlocked ? 'unlocked' : ''}`} style={{ 
-      width: "100vw", 
-      position: "relative"
-    }}>
-      <section className="snapSection envelopeSection" style={{
-        backgroundImage: "url('/textures/envelope-inside-page.png')",
+    <main 
+      ref={mainRef}
+      className={`snapContainer ${isUnlocked ? 'unlocked' : ''}`}
+      style={{ width: "100vw", position: "relative" }}
+    >
+      <section 
+        id="section1" 
+        className="snapSection envelopeSection"
+        style={{ 
+          height: "100vh", 
+          width: "100vw", 
+        backgroundImage: "url('/textures/invite-bg.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         display: "flex", 
         justifyContent: "center", 
         alignItems: "center", 
         position: "relative",
+        overflow: "hidden"
       }}>
       <style>{`
         .envelope-wrapper {
@@ -320,62 +327,45 @@ export default function EnvelopePlayground() {
 
       <div ref={containerRef} className="envelope-wrapper" onClick={handleToggle} style={{ cursor: "pointer" }}>
         
-        {isSafari ? (
-          <>
-            {/* SVG 1: Back Layer */}
-            <div 
-              ref={svg1Ref}
-              style={{ position: "absolute", inset: 0, zIndex: 1 }}
-              dangerouslySetInnerHTML={{ __html: svgContent }}
-            />
+        {/* SVG 1: Back Layer */}
+        <div 
+          ref={svg1Ref}
+          style={{ position: "absolute", inset: 0, zIndex: 1 }}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+        />
 
-            {/* HTML Card Layer */}
-            <div ref={cardRef} className="card-wrapper-safari" style={{ zIndex: 2 }}>
-              <div className="card-wrapper">
-                <div className="card-inner">
-                  <div className="card-content">
-                    <div className="card-line-1">With Love</div>
-                    <div className="card-line-2">From</div>
-                    <div className="card-line-3">
-                      <span className="card-name">Ritik</span>
-                      <span className="card-ampersand">&amp;</span>
-                      <span className="card-name">Ameesha</span>
-                    </div>
-                  </div>
+        {/* HTML Card Layer */}
+        <div ref={cardRef} className="card-wrapper-safari" style={{ zIndex: 2 }}>
+          <div className="card-wrapper">
+            <div className="card-inner">
+              <div className="card-content">
+                <div className="card-line-1">With Love</div>
+                <div className="card-line-2">From</div>
+                <div className="card-line-3">
+                  <span className="card-name">Ritik</span>
+                  <span className="card-ampersand">&amp;</span>
+                  <span className="card-name">Ameesha</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* SVG 2: Front Layer (Clipped to only show the front pocket) */}
-            <div 
-              ref={svg2Ref}
-              style={{ 
-                position: "absolute", 
-                inset: 0, 
-                zIndex: 3, 
-                pointerEvents: "none",
-                clipPath: "polygon(0% 0%, 4.54% 15.67%, 49.96% 59.37%, 95.37% 15.76%, 100% 0%, 100% 100%, 0% 100%)"
-              }}
-              dangerouslySetInnerHTML={{ __html: svgContent }}
-            />
-          </>
-        ) : (
-          /* Chrome/Firefox Native SVG */
-          <div 
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 1
-            }}
-            dangerouslySetInnerHTML={{ __html: svgContent }}
-          />
-        )}
+        {/* SVG 2: Front Layer (Clipped to only show the front pocket) */}
+        <div 
+          ref={svg2Ref}
+          style={{ 
+            position: "absolute", 
+            inset: 0, 
+            zIndex: 3, 
+            pointerEvents: "none",
+            clipPath: "polygon(0% 0%, 4.54% 15.67%, 49.96% 59.37%, 95.37% 15.76%, 100% 0%, 100% 100%, 0% 100%)"
+          }}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+        />
+        
       </div>
       </section>
-
       <Page2Content />
     </main>
   );
