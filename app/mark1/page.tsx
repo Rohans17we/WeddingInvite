@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { gsap } from "gsap";
 import Page2Content from "../../components/Page2Content";
 
@@ -17,11 +17,13 @@ export default function EnvelopePlayground() {
   // State and Refs for scroll locking
   const isUnlockedRef = useRef(false);
   const isAtTopRef = useRef(true);
-  const [isUnlocked, _setIsUnlocked] = useState(false);
   
   const setIsUnlocked = (val: boolean) => {
     isUnlockedRef.current = val;
-    _setIsUnlocked(val);
+    if (mainRef.current) {
+      if (val) mainRef.current.classList.add('unlocked');
+      else mainRef.current.classList.remove('unlocked');
+    }
   };
 
   // 1. Fetch and modify SVG
@@ -59,7 +61,18 @@ export default function EnvelopePlayground() {
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power2.inOut" },
-        onComplete: () => setIsUnlocked(true),
+        onComplete: () => {
+          setIsUnlocked(true);
+        },
+        onUpdate: () => {
+          const currentTl = timelineRef.current;
+          if (!currentTl || !svg2Ref.current) return;
+          if (currentTl.progress() < 0.95) {
+            svg2Ref.current.style.zIndex = "3";
+          } else {
+            svg2Ref.current.style.zIndex = "1";
+          }
+        },
         onReverseComplete: () => setIsUnlocked(false)
       });
 
@@ -102,9 +115,7 @@ export default function EnvelopePlayground() {
             "-=1.8"
           )
           // Move the SVGs (envelope) down
-          .to([svg1Ref.current, svg2Ref.current], { y: "97.4%", duration: 2.3 }, "<")
-          // 5. Push the front pocket envelope Z-index to the extreme back so it doesn't overlap the card
-          .set(svg2Ref.current, { zIndex: 1 });
+          .to([svg1Ref.current, svg2Ref.current], { y: "97.4%", duration: 2.3 }, "<");
       }
 
       // 6. Final inner shadow reveal
@@ -198,10 +209,54 @@ export default function EnvelopePlayground() {
     }
   };
 
+  const envelopeLayers = useMemo(() => {
+    if (!svgContent) return null;
+    return (
+      <>
+        {/* SVG 1: Back Layer */}
+        <div 
+          ref={svg1Ref}
+          style={{ position: "absolute", inset: 0, zIndex: 1 }}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+        />
+
+        {/* HTML Card Layer */}
+        <div ref={cardRef} className="card-wrapper-safari" style={{ zIndex: 2 }}>
+          <div className="card-wrapper">
+            <div className="card-inner">
+              <div className="card-content">
+                <div className="card-line-1">With Love</div>
+                <div className="card-line-2">From</div>
+                <div className="card-line-3">
+                  <span className="card-name">Ritik</span>
+                  <span className="card-ampersand">&amp;</span>
+                  <span className="card-name">Ameesha</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SVG 2: Front Layer (Clipped to only show the front pocket) */}
+        <div 
+          ref={svg2Ref}
+          style={{ 
+            position: "absolute", 
+            inset: 0, 
+            zIndex: 3, 
+            pointerEvents: "none",
+            clipPath: "polygon(0% 0%, 4.54% 15.67%, 49.96% 59.37%, 95.37% 15.76%, 100% 0%, 100% 100%, 0% 100%)"
+          }}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+        />
+      </>
+    );
+  }, [svgContent]);
+
   return (
     <main 
       ref={mainRef}
-      className={`snapContainer ${isUnlocked ? 'unlocked' : ''}`}
+      className="snapContainer"
       style={{ width: "100vw", position: "relative" }}
     >
       <section 
@@ -326,44 +381,7 @@ export default function EnvelopePlayground() {
       `}</style>
 
       <div ref={containerRef} className="envelope-wrapper" onClick={handleToggle} style={{ cursor: "pointer" }}>
-        
-        {/* SVG 1: Back Layer */}
-        <div 
-          ref={svg1Ref}
-          style={{ position: "absolute", inset: 0, zIndex: 1 }}
-          dangerouslySetInnerHTML={{ __html: svgContent }}
-        />
-
-        {/* HTML Card Layer */}
-        <div ref={cardRef} className="card-wrapper-safari" style={{ zIndex: 2 }}>
-          <div className="card-wrapper">
-            <div className="card-inner">
-              <div className="card-content">
-                <div className="card-line-1">With Love</div>
-                <div className="card-line-2">From</div>
-                <div className="card-line-3">
-                  <span className="card-name">Ritik</span>
-                  <span className="card-ampersand">&amp;</span>
-                  <span className="card-name">Ameesha</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SVG 2: Front Layer (Clipped to only show the front pocket) */}
-        <div 
-          ref={svg2Ref}
-          style={{ 
-            position: "absolute", 
-            inset: 0, 
-            zIndex: 3, 
-            pointerEvents: "none",
-            clipPath: "polygon(0% 0%, 4.54% 15.67%, 49.96% 59.37%, 95.37% 15.76%, 100% 0%, 100% 100%, 0% 100%)"
-          }}
-          dangerouslySetInnerHTML={{ __html: svgContent }}
-        />
-        
+        {envelopeLayers}
       </div>
       </section>
       <Page2Content />
